@@ -22,6 +22,17 @@ Features, interfaces, and file structures may change. Use it at your own risk an
 
 ---
 
+## 📦 Installation
+
+Clone the repository and install locally with pip:
+
+```bash
+git clone https://github.com/YOUR_USERNAME/NllocPy.git
+cd NllocPy
+pip install .
+
+---
+
 ## 👤 Attribution
 
 - **NllocPy** was developed and is maintained by **Dr. Luigi Sante Zampa**.
