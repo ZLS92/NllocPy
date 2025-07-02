@@ -25,7 +25,7 @@ Features, interfaces, and file structures may change. Use it at your own risk an
 ## 👤 Attribution
 
 - **NllocPy** was developed and is maintained by **Dr. Luigi Sante Zampa**.
-- The **C code in `src/`** is the original **NonLinLoc** software developed by Anthony Lomax.  
+- The **C code in `src/`** is the original **NonLinLoc** software developed by Anthony Lomax et al.,.  
   NonLinLoc is available at [ut-beg-texnet/NonLinLoc](https://github.com/ut-beg-texnet/NonLinLoc).
 - **NllocPy** only provides a Python automation layer and utility scripts for easier integration.
 - Some ideas and components for reading/writing NonLinLoc grid files uses the [NLLGrid](https://github.com/claudiodsf/nllgrid),  
