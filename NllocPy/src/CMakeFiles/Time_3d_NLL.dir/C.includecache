@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/mnt/e/Documents/Lavori_Tirocini/Assegno_CRS_22_23/TomoNE/python/modules/NllocPy/NllocPy/src/Time_3d_NLL.c
+stdio.h
+-
+math.h
+-
+sunmath.h
+-
+stdlib.h
+-
+malloc.h
+-
+

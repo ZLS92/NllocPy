@@ -1,0 +1,32 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/mnt/e/Documents/Lavori_Tirocini/Assegno_CRS_22_23/TomoNE/python/modules/NllocPy/NllocPy/src/velmod.c
+util.h
+/mnt/e/Documents/Lavori_Tirocini/Assegno_CRS_22_23/TomoNE/python/modules/NllocPy/NllocPy/src/util.h
+velmod.h
+/mnt/e/Documents/Lavori_Tirocini/Assegno_CRS_22_23/TomoNE/python/modules/NllocPy/NllocPy/src/velmod.h
+
+include/util.h
+stdlib.h
+-
+stdio.h
+-
+
+include/velmod.h
+stdlib.h
+-
+stdio.h
+-
+string.h
+-
+math.h
+-
+limits.h
+-
+

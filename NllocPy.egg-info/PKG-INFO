@@ -1,0 +1,26 @@
+Metadata-Version: 2.4
+Name: NllocPy
+Version: 0.0.1
+Summary: A very basic calculator
+Home-page: 
+Author: Luigi Sante Zampa
+Author-email: zampaluigis@gmail.com
+License: MIT
+Keywords: calculator
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+License-File: LICENSE
+Requires-Dist: nllgrid
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: keywords
+Dynamic: license
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: summary
+
+Nlloc python version

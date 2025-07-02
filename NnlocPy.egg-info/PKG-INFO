@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: NnlocPy
+Version: 0.0.1
+Summary: A very basic calculator
+Home-page: 
+Author: Luigi Sante Zampa
+Author-email: zampaluigis@gmail.com
+License: MIT
+Keywords: calculator
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+License-File: LICENSE
+Requires-Dist: nllgrid
+
+Sipups python version
