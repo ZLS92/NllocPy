@@ -5,6 +5,14 @@ This package provides Python tools to automate input file preparation, manage co
 
 ---
 
+## 🚧 Project Status
+
+**This project is currently under development.**  
+Features, interfaces, and file structures may change. Use it at your own risk and feel free to contribute!
+
+
+---
+
 ## ⚙️ Features
 
 - **Input File Automation**: Easily create control parameter files (`nlloc_control_param.txt`), velocity models, and travel-time grids.
@@ -19,8 +27,8 @@ This package provides Python tools to automate input file preparation, manage co
 - The **C code in `src/`** is the original **NonLinLoc** software developed by Anthony Lomax.  
   NonLinLoc is available at [ut-beg-texnet/NonLinLoc](https://github.com/ut-beg-texnet/NonLinLoc).
 - **NllocPy** only provides a Python automation layer and utility scripts for easier integration.
-- Some ideas and components for reading/writing NonLinLoc grid files are inspired by [NLLGrid](https://github.com/claudiodsf/nllgrid),  
-  a Python class by Claudio Satriano and Natalia Poiata.
+- Some ideas and components for reading/writing NonLinLoc grid files uses the [NLLGrid](https://github.com/claudiodsf/nllgrid),  
+  a Python library by Claudio Satriano and Natalia Poiata.
 - If you use this wrapper, please **also cite NonLinLoc** in your scientific work:
 
   > Lomax, A., Virieux, J., Volant, P., & Berge, C. (2000).  
