@@ -282,12 +282,12 @@ def figsplt( im_list, m=1, n=1, x_size=20, y_size=20, dpi=None, path_nm=None,
              titles=None, alphabet=True, letters=[], bbox_inches=None, aspect='auto' ):
     
     sp = 0
-    fig = plt.figure(figsize=(x_size*0.393701,y_size*0.393701))
+    fig = plt.figure(figsize=(x_size,y_size))
     alph = ['a','b','c','d','e','f','g','h','i','l','m','n','o','p','q','r']
     if m!=1 or n!=1:
         for i, im in enumerate(im_list):
             sp += 1      
-            imsplt(im,m,n,sp)  
+            imsplt(im,m,n,sp, aspect=aspect )  
             if (alphabet is True) and (letters==[]):
                 plt.annotate(alph[i]+'.', xy=(xn,yn), xycoords='axes  fraction', size=text_size) 
             if (alphabet is True) and (letters!=[]):  
@@ -295,7 +295,8 @@ def figsplt( im_list, m=1, n=1, x_size=20, y_size=20, dpi=None, path_nm=None,
             if titles is not None:
                 plt.title(titles[i])
  
-    else: imsplt(im_list[0],m,n,1, aspect=aspect )
+    else: 
+        imsplt(im_list[0],m,n,1, aspect=aspect )
     
     if tight is True:
         fig.tight_layout(pad=pad, h_pad=h_pad, w_pad=w_pad)                 
