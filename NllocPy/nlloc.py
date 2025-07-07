@@ -4730,8 +4730,6 @@ def wadati_plot( loc_data, s=1, plot=True, time_threshold=None ) :
         iout = ( my < tt_dict['ts-tp'] ) & ( My > tt_dict['ts-tp'] ) 
 
     if plot == True :
-        
-        lsz_plot.plt.style.use('seaborn-whitegrid')
 
         lsz_plot.plt.scatter( tt_dict['tp'][iout], tt_dict['ts-tp'][iout], s=s, c='b' )
         lsz_plot.plt.plot( tt_dict['tp'][~idx], y[~idx], c='r', label=f'Vp/Vs: {vpvs}' )
