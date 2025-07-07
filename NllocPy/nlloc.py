@@ -1767,6 +1767,55 @@ def create_tt_file( file_path_name,
     return file_path_name
 
 # -----------------------------------------------------------------------------
+def create_eve_file( loc_data, sep=',', output_file='loc_events.csv', fmt = '% 15.6f' ) :
+    """
+    Creates an event file from location data in either a file or dictionary format.
+    Parameters
+    ----------
+    loc_data : str or dict
+        The location data to be processed. If a string, it should be a file path to the data.
+        If a dictionary, it should contain the event data to be written to the output file.
+    sep : str, optional
+        The separator to use in the output CSV file. Default is ','.
+    output_file : str, optional
+        The path to the output file where the event data will be saved. Default is 'loc_events.csv'.
+    fmt : str, optional
+        The format string to use for floating point numbers in the output file. Default is '% 15.6f'.
+    Returns
+    -------
+    str
+        The path to the output file.
+    Raises
+    ------
+    ValueError
+        If `loc_data` is a string and the specified file does not exist.
+    Notes
+    -----
+    - If `loc_data` is a string, the function attempts to read the location data from the specified file.
+    - If `loc_data` is a dictionary, the function writes the data to a CSV file using the specified separator and format.
+    """
+
+    if type( loc_data ) is str :
+        
+        if os.path.exist( loc_data ) :
+
+            read_loc( loc_data )
+        
+        else :
+            raise ValueError( f"File {loc_data} does not exist." )
+        
+    elif type( loc_data ) is dict :
+
+        _ = utl.dict2csv( 
+            dictionary = loc_data, 
+            sep = sep, 
+            path_name = output_file,
+            fmt = fmt, 
+            )
+        
+    return output_file
+
+# -----------------------------------------------------------------------------
 def read_station_file( stations_file ) :
     """
     Reads a station file and returns a dictionary containing the station information.
@@ -3621,12 +3670,21 @@ def read_loc( path, plot=False, aspect='auto', reverse_z=True, size=None ) :
 # -----------------------------------------------------------------------------
 def plot_eve_st( xyz_events=None, 
                  xyz_stations=None, 
-                 esize=None, ssize=None, 
-                 ecolor='b', scolor='r', 
-                  emarker='o', smarker='v', alpha=0.5,
-                 aspect='auto', zst_scale=1, drop_duplicates=True, 
-                 idxe=None, idxs=None, 
-                 titles=['X / Z', 'Y / Z', 'Y / X'] ) :
+                 esize=None, 
+                 ssize=None, 
+                 ecolor='b', 
+                 scolor='r', 
+                 emarker='o', 
+                 smarker='v', 
+                 alpha=0.5,
+                 aspect='auto', 
+                 zst_scale=1, 
+                 drop_duplicates=True, 
+                 idxe=None, 
+                 idxs=None, 
+                 titles=['X / Z', 'Y / Z', 'Y / X'] 
+    ) :
+
     """
     Plot events and stations in 3D space.
 
