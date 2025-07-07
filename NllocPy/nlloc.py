@@ -1767,7 +1767,8 @@ def create_tt_file( file_path_name,
     return file_path_name
 
 # -----------------------------------------------------------------------------
-def create_eve_file( loc_data, sep=',', output_file='loc_events.csv', fmt = '% 15.6f' ) :
+def create_eve_file( loc_data, sep=',', output_file='loc_events.csv', 
+        reverse_z=False, fmt = '% 15.6f' ) :
     """
     Creates an event file from location data in either a file or dictionary format.
     Parameters
@@ -1805,6 +1806,11 @@ def create_eve_file( loc_data, sep=',', output_file='loc_events.csv', fmt = '% 1
             raise ValueError( f"File {loc_data} does not exist." )
         
     elif type( loc_data ) is dict :
+
+        if reverse_z is True :
+            
+            if 'z' in loc_data :
+                loc_data['z'] = -1 * np.array( loc_data['z'] )
 
         _ = utl.dict2csv( 
             dictionary = loc_data, 
@@ -4695,13 +4701,19 @@ def wadati_plot( loc_data, s=1, plot=True, time_threshold=None ) :
     tt_dict['tt'] = ( tt_dict['tti'].astype(float) - tt_dict['tt0'].astype(float) )/1e9
 
     for i,e in enumerate( tt_dict['eve'] ) :
+        
         if i == np.size( tt_dict['eve'] ) -2: 
+            
             break
 
         if 'P' in tt_dict['phase_descriptor'][i] :
+
             if 'S' in tt_dict['phase_descriptor'][i+1] :
+                
                 if tt_dict['st'][i+1] == tt_dict['st'][i] :
+                    
                     tt_dict['tp'][i] = tt_dict['tt'][i]
+                    
                     tt_dict['ts-tp'][i] = tt_dict['tt'][i+1]
 
     # linear regression
@@ -4718,6 +4730,9 @@ def wadati_plot( loc_data, s=1, plot=True, time_threshold=None ) :
         iout = ( my < tt_dict['ts-tp'] ) & ( My > tt_dict['ts-tp'] ) 
 
     if plot == True :
+        
+        lsz_plot.plt.style.use('seaborn-whitegrid')
+
         lsz_plot.plt.scatter( tt_dict['tp'][iout], tt_dict['ts-tp'][iout], s=s, c='b' )
         lsz_plot.plt.plot( tt_dict['tp'][~idx], y[~idx], c='r', label=f'Vp/Vs: {vpvs}' )
 
@@ -4726,6 +4741,7 @@ def wadati_plot( loc_data, s=1, plot=True, time_threshold=None ) :
             lsz_plot.plt.plot( tt_dict['tp'][~idx], my[~idx], c='k', linestyle='dashed' )
             lsz_plot.plt.plot( tt_dict['tp'][~idx], My[~idx], c='k', linestyle='dashed' )
             lsz_plot.plt.scatter( tt_dict['tp'][~iout], tt_dict['ts-tp'][~iout], s=s, c='r' )
+
         lsz_plot.plt.xlabel( 'Tp [ sec ]' )
         lsz_plot.plt.ylabel( 'Ts - Tp [ sec ]' )
         lsz_plot.plt.legend()
@@ -4733,7 +4749,7 @@ def wadati_plot( loc_data, s=1, plot=True, time_threshold=None ) :
     iout = np.isin( tt_dict['eve'], tt_dict['eve'][~iout & ~idx ] ) &\
            np.isin( tt_dict['st'], tt_dict['st'][~iout & ~idx ] )
 
-    return vpvs, iout, tt_dict
+    return vpvs, iout, tt_dict, y
 
 # -------------------------------------------------------------------------
 def map_rec_eve(xy_events=None, xy_stations=None, raster_map=raster_globe, 
