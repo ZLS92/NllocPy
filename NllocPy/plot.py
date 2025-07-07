@@ -267,6 +267,9 @@ def imsplt( img, m, n, p, aspect='auto' ):
     
     plt.subplot(m,n,p)
     img = mpimg.imread(img)
+    h, w = img.shape[:2]
+    if aspect == 'equal':
+        aspect = w/h
     impl=plt.imshow(img, aspect=aspect )
     impl.axes.get_xaxis().set_visible(False)
     impl.axes.get_yaxis().set_visible(False)
