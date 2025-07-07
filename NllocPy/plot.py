@@ -276,6 +276,93 @@ def imsplt( img, m, n, p, aspect='auto' ):
     ax=impl.axes;
     ax.axis('off')
 
+
+# -----------------------------------------------------------------------------
+def crop_img(
+    img, 
+    left=0, top=0, right=0, bottom=0, 
+    perc=False, 
+    show=True, 
+    save=False, 
+    output_path=None ):
+    """
+    Crop an image file using NumPy slicing after loading it with mpimg.imread.
+
+    Parameters
+    ----------
+    img : str
+        Path to the input image file.
+    left : int or float, optional
+        Pixels or percentage to crop from the left side (default is 0).
+    top : int or float, optional
+        Pixels or percentage to crop from the top side (default is 0).
+    right : int or float, optional
+        Pixels or percentage to crop from the right side (default is 0).
+    bottom : int or float, optional
+        Pixels or percentage to crop from the bottom side (default is 0).
+    perc : bool, optional
+        If True, the crop values are interpreted as percentages (0–100).
+        If False, they are interpreted as pixel values. Default is False.
+    show : bool, optional
+        If True, display the cropped image using matplotlib.pyplot.imshow.
+    save : bool, optional
+        If True, save the cropped image to disk.
+    output_path : str or None, optional
+        Path to save the cropped image. 
+        If None and save=True, the original file will be overwritten.
+
+    Returns
+    -------
+    cropped : np.ndarray
+        The cropped image as a NumPy array.
+
+    Notes
+    -----
+    - This function does not require PIL. 
+    - Uses matplotlib.pyplot.imsave for saving the output image.
+    - The aspect ratio is preserved according to the slicing.
+
+    Example
+    -------
+    >>> crop_img('input.png', left=50, right=50, save=True, output_path='cropped.png')
+    >>> crop_img('input.png', left=10, right=10, perc=True, save=True)
+    """
+
+    if type( img ) is str:
+        if os.path.isfile(img):
+            img_path = img
+        else :
+            raise FileNotFoundError(f"File not found: {img}")
+    
+    h, w = img.shape[:2]
+
+    if perc:
+        left_px = int(w * left / 100)
+        right_px = int(w * right / 100)
+        top_px = int(h * top / 100)
+        bottom_px = int(h * bottom / 100)
+    else:
+        left_px = left
+        right_px = right
+        top_px = top
+        bottom_px = bottom
+
+    cropped = img[top_px : h - bottom_px, left_px : w - right_px, ...]
+
+    if show:
+        plt.imshow(cropped)
+        plt.axis('off')
+        plt.show()
+
+    if save:
+        if output_path is None:
+            output_path = img_path  # Sovrascrive l'originale!
+        plt.imsave(output_path, cropped)
+        print(f"Immagine salvata in: {output_path}")
+
+    return cropped
+
+
 # -----------------------------------------------------------------------------
 def figsplt( im_list, m=1, n=1, x_size=20, y_size=20, dpi=None, path_nm=None, 
              text_size=12, xn=0.1, yn=0.1, pad=1, h_pad=None, w_pad=None, tight=True,
@@ -286,7 +373,7 @@ def figsplt( im_list, m=1, n=1, x_size=20, y_size=20, dpi=None, path_nm=None,
     alph = ['a','b','c','d','e','f','g','h','i','l','m','n','o','p','q','r']
     if m!=1 or n!=1:
         for i, im in enumerate(im_list):
-            sp += 1      
+            sp += 1
             imsplt(im,m,n,sp, aspect=aspect )  
             if (alphabet is True) and (letters==[]):
                 plt.annotate(alph[i]+'.', xy=(xn,yn), xycoords='axes  fraction', size=text_size) 
