@@ -255,36 +255,8 @@ def plot_layers_2d( lines, lx, top=None, bottom=None, hatch=None, colors='random
     return xy_ply
 
 # -----------------------------------------------------------------------------
-def imsplt( img, m, n, p, aspect='auto' ):
-    
-    """
-    Plot image files inyo subplots
-    img = file path/name
-    m = numbers of rows
-    n = numbers of columns 
-    p = position of the image 
-    """
-    
-    plt.subplot(m,n,p)
-    img = mpimg.imread(img)
-    h, w = img.shape[:2]
-    if aspect == 'equal':
-        aspect = w/h
-    impl=plt.imshow(img, aspect=aspect )
-    impl.axes.get_xaxis().set_visible(False)
-    impl.axes.get_yaxis().set_visible(False)
-    ax=impl.axes;
-    ax.axis('off')
-
-
-# -----------------------------------------------------------------------------
-def crop_img(
-    img, 
-    left=0, top=0, right=0, bottom=0, 
-    perc=False, 
-    show=True, 
-    save=False, 
-    output_path=None ):
+def crop_img( img, left=0, top=0, right=0, bottom=0, perc=False, show=True, 
+    save=False, output_path=None, dpi=300 ):
     """
     Crop an image file using NumPy slicing after loading it with mpimg.imread.
 
@@ -310,6 +282,8 @@ def crop_img(
     output_path : str or None, optional
         Path to save the cropped image. 
         If None and save=True, the original file will be overwritten.
+    dpi : int, optional
+        Dots per inch for the saved image. Default is 300.
 
     Returns
     -------
@@ -328,14 +302,19 @@ def crop_img(
     >>> crop_img('input.png', left=10, right=10, perc=True, save=True)
     """
 
-    if type( img ) is str:
+    # Load image
+    if isinstance(img, str):
         if os.path.isfile(img):
             img_path = img
-        else :
+            img = mpimg.imread(img)
+        else:
             raise FileNotFoundError(f"File not found: {img}")
-    
+    else:
+        img_path = None  # Not saving in this case
+
     h, w = img.shape[:2]
 
+    # Convert to pixels if needed
     if perc:
         left_px = int(w * left / 100)
         right_px = int(w * right / 100)
@@ -347,6 +326,38 @@ def crop_img(
         top_px = top
         bottom_px = bottom
 
+    # Ensure values are within bounds
+    left_px = max(0, left_px)
+    right_px = max(0, right_px)
+    top_px = max(0, top_px)
+    bottom_px = max(0, bottom_px)
+
+    # Compute proposed crop
+    crop_w = w - left_px - right_px
+    crop_h = h - top_px - bottom_px
+
+    # Original aspect ratio
+    aspect_orig = w / h
+    aspect_crop = crop_w / crop_h
+
+    # If different, adjust height to match width crop
+    if not np.isclose(aspect_crop, aspect_orig, atol=1e-3):
+        new_crop_h = int(crop_w / aspect_orig)
+        delta_h = crop_h - new_crop_h
+
+        # Split delta symmetrically
+        top_px += delta_h // 2
+        bottom_px += delta_h - (delta_h // 2)
+
+        # Bound checks
+        top_px = max(0, top_px)
+        bottom_px = max(0, bottom_px)
+
+        crop_h = h - top_px - bottom_px
+        aspect_crop = crop_w / crop_h
+        print(f"[INFO] Aspect ratio corrected: {aspect_crop:.4f} (original: {aspect_orig:.4f})")
+
+    # Final crop
     cropped = img[top_px : h - bottom_px, left_px : w - right_px, ...]
 
     if show:
@@ -355,22 +366,101 @@ def crop_img(
         plt.show()
 
     if save:
+        if output_path is None and img_path is not None:
+            output_path = img_path
         if output_path is None:
-            output_path = img_path  # Sovrascrive l'originale!
-        plt.imsave(output_path, cropped)
-        print(f"Immagine salvata in: {output_path}")
+            raise ValueError("No output path provided for saving.")
+        plt.imsave(output_path, cropped, dpi=dpi)
+        print(f"[INFO] Immagine salvata in: {output_path}")
 
     return cropped
 
+# -----------------------------------------------------------------------------
+def imsplt( img, m, n, p, aspect='auto' ):
+    
+    """
+    Display an image in a subplot of a matplotlib figure.
+    Parameters
+    ----------
+    img : str or np.ndarray
+        Path to the image file or a NumPy array representing the image.
+    m : int
+        Number of rows in the subplot grid.
+    n : int
+        Number of columns in the subplot grid.
+    p : int
+        Position of the subplot in the grid (1-indexed).
+    aspect : str or float, optional
+        Aspect ratio of the image. 
+        If 'equal', the aspect ratio is set to width/height. 
+        If 'auto', the aspect ratio is determined by the image dimensions.
+        Default is 'auto'.
+    Notes
+    -----
+    - The function assumes that the input image is either a valid file path or a NumPy array.
+    - If the input is a file path, it checks if the file exists and raises a FileNotFoundError if not.
+    - The function uses matplotlib to display the image without axes.
+    - The subplot is created using the specified position in a grid defined by m and n.
+    - The aspect ratio can be set to 'equal' or 'auto', or a specific float value.
+    - If the input is a string, it is treated as a file path to an image.
+    Example
+    -------
+    >>> imsplt('path/to/image.jpg', 2, 2, 1)
+    >>> imsplt(np.random.rand(100, 100, 3), 2, 2, 1, aspect='equal')
+    """
+    
+    plt.subplot(m,n,p)
+
+    if type(img) is str:
+
+        if os.path.isfile(img):
+            img = mpimg.imread( img )
+        else:
+            raise FileNotFoundError(f"File not found: {img}")
+    
+    h, w = img.shape[:2]
+    
+    if aspect == 'equal':
+        aspect = w/h
+    
+    impl=plt.imshow(img, aspect=aspect )
+    impl.axes.get_xaxis().set_visible(False)
+    impl.axes.get_yaxis().set_visible(False)
+    
+    ax=impl.axes;
+    ax.axis('off')
 
 # -----------------------------------------------------------------------------
 def figsplt( im_list, m=1, n=1, x_size=20, y_size=20, dpi=None, path_nm=None, 
              text_size=12, xn=0.1, yn=0.1, pad=1, h_pad=None, w_pad=None, tight=True,
              titles=None, alphabet=True, letters=[], bbox_inches=None, aspect='auto' ):
+
+    if x_size is None or y_size is None:
+        # Calcola dimensioni max in pixel solo per avere un'idea (opzionale)
+        widths, heights = [], []
+        for im in im_list:
+            if isinstance(im, str):
+                im = mpimg.imread(im)
+            h, w = im.shape[:2]
+            widths.append(w)
+            heights.append(h)
+
+        max_w, max_h = max(widths), max(heights)
+
+        # Scala arbitraria, es. 0.01 inch per pixel
+        scale_factor = 0.01
+
+        fig_width = (max_w * n) * scale_factor
+        fig_height = (max_h * m) * scale_factor
+
+        x_size, y_size = fig_width, fig_height
+
+        x_size, y_size = fig_width, fig_height
     
-    sp = 0
     fig = plt.figure(figsize=(x_size,y_size))
+
     alph = ['a','b','c','d','e','f','g','h','i','l','m','n','o','p','q','r']
+    sp = 0
     if m!=1 or n!=1:
         for i, im in enumerate(im_list):
             sp += 1
@@ -381,12 +471,12 @@ def figsplt( im_list, m=1, n=1, x_size=20, y_size=20, dpi=None, path_nm=None,
                 plt.annotate(letters[i]+'.', xy=(xn,yn), xycoords='axes  fraction', size=text_size) 
             if titles is not None:
                 plt.title(titles[i])
- 
+
     else: 
         imsplt(im_list[0],m,n,1, aspect=aspect )
-    
+
     if tight is True:
-        fig.tight_layout(pad=pad, h_pad=h_pad, w_pad=w_pad)                 
+        fig.tight_layout( pad=pad, h_pad=h_pad, w_pad=w_pad )
 
     if path_nm!=None:
         plt.savefig(path_nm, dpi=dpi, bbox_inches=bbox_inches )  

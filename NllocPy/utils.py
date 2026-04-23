@@ -6,28 +6,29 @@ Created on Wed Oct 14 18:58:52 2020
 """
 
 # -----------------------------------------------------------------------------
+from matplotlib.widgets import LassoSelector
+from matplotlib.colors import LightSource
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from datetime import datetime, timedelta
+from matplotlib.path import Path
+from matplotlib import cm
+from matplotlib.path import Path
+from osgeo import gdal, osr, ogr
 import os
 import pyproj as prj
 import numpy as np
 import scipy as sp
-from matplotlib.widgets import LassoSelector
-from matplotlib.colors import LightSource
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.pyplot as plt
 import itertools
 import random
 import time
 import copy
-from matplotlib.path import Path
-import datetime
-from osgeo import gdal, osr, ogr
 import filecmp
 import shutil
 import platform
 import tempfile
 import sys
 import html
-from matplotlib import cm
 import io 
 import pdfkit
 
@@ -3594,7 +3595,7 @@ def create_log_file( main_function,
         output = dual_output.buffer.getvalue()
         sys.stdout = original_stdout  # Reset stdout
         plt.savefig = original_savefig
-        current_datetime = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        current_datetime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         html_content = f"""
         <html>
         <head><title>{only_fname} </title></head>

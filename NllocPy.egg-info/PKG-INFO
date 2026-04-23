@@ -1,26 +1,66 @@
-Metadata-Version: 2.4
+Metadata-Version: 2.1
 Name: NllocPy
 Version: 0.0.1
-Summary: A very basic calculator
-Home-page: 
+Summary: Nlloc python wrapper
+Home-page: UNKNOWN
 Author: Luigi Sante Zampa
 Author-email: zampaluigis@gmail.com
 License: MIT
 Keywords: calculator
+Platform: UNKNOWN
 Classifier: Development Status :: 2 - Pre-Alpha
 Classifier: Intended Audience :: Science/Research
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 3
 License-File: LICENSE
-Requires-Dist: nllgrid
-Dynamic: author
-Dynamic: author-email
-Dynamic: classifier
-Dynamic: description
-Dynamic: keywords
-Dynamic: license
-Dynamic: license-file
-Dynamic: requires-dist
-Dynamic: summary
 
-Nlloc python version
+# NllocPy
+
+**NllocPy** is a Python wrapper for **NonLinLoc**, an open-source software developed by Anthony Lomax for probabilistic earthquake location.  
+This package provides Python tools to automate input file preparation, manage control parameters, run NonLinLoc, and analyze or visualize results.
+
+---
+
+## 🚧 Project Status
+
+**This project is currently under development.**  
+Features, interfaces, and file structures may change. Use it at your own risk and feel free to contribute!
+
+
+---
+
+## ⚙️ Features
+
+- **Input File Automation**: Easily create control parameter files (`nlloc_control_param.txt`), velocity models, and travel-time grids.
+- **Utility Scripts**: Python tools for handling raster DEMs and geospatial shapefiles.
+- **Integrated NonLinLoc Core**: Includes the **original NonLinLoc C source code** (`src/`) for easy compilation.
+- **Result Visualization**: Python functions for plotting and interactive analysis.
+
+---
+
+## 📦 Installation
+
+Clone the repository and install locally with pip:
+
+```bash
+git clone https://github.com/YOUR_USERNAME/NllocPy.git
+cd NllocPy
+pip install .
+
+---
+
+## 👤 Attribution
+
+- **NllocPy** was developed and is maintained by **Dr. Luigi Sante Zampa**.
+- The **C code in `src/`** is the original **NonLinLoc** software developed by Anthony Lomax et al.,.  
+  NonLinLoc is available at [ut-beg-texnet/NonLinLoc](https://github.com/ut-beg-texnet/NonLinLoc).
+- **NllocPy** only provides a Python automation layer and utility scripts for easier integration.
+- Some ideas and components for reading/writing NonLinLoc grid files uses the [NLLGrid](https://github.com/claudiodsf/nllgrid),  
+  a Python library by Claudio Satriano and Natalia Poiata.
+- If you use this wrapper, please **also cite NonLinLoc** in your scientific work:
+
+  > Lomax, A., Virieux, J., Volant, P., & Berge, C. (2000).  
+  > *Probabilistic earthquake location in 3D and layered models: Introduction of a Metropolis-Gibbs method and comparison with linear locations.*  
+  > In **Advances in Seismic Event Location**, Springer, pp. 101–134.  
+  > DOI: [10.1007/978-94-015-9536-0_5](https://doi.org/10.1007/978-94-015-9536-0_5)
+

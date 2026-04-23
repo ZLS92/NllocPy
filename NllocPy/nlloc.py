@@ -21,6 +21,8 @@ np = utl.np
 os = utl.os
 shutil = utl.shutil
 platform = utl.platform
+datetime = utl.datetime
+timedelta = utl.timedelta
 
 # -----------------------------------------------------------------------------
 # Set the path to the current directory
@@ -42,13 +44,13 @@ raster_globe = mdir +s+ 'raster_globe.tiff'
 
 raster_topo = mdir +s+ 'SRTMvf_250m_WGS84_CGIAR.tif'
 
-# -----------------------------------------------------------------------------
-# Deafault parameter string
+# =============================================================================
+# Deafault input NonLinLoc file structures
 
 # -----------------------------------------------------------------------------
-#%% Parameters Headers
+#%% Input Headers file structure
 
-param_header = """
+input_header = """
 # =============================================================================
 #  NonLinLoc programs control file
 #
@@ -74,6 +76,7 @@ param_header = """
 # Generic control file statements
 # =============================================================================
 #
+# -----------------------------------------------------------------------------
 # CONTROL - Control
 # required, non-repeatable
 # Syntax 1: CONTROL messageFlag randomNumberSeed
@@ -81,13 +84,14 @@ param_header = """
 #
 #    messageFlag (integer, min:-1, default:1) sets the verbosity level for messages printed to the terminal ( -1 = completely silent, 0 = error messages only, 1 = 0 + higher-level warning and progress messages, 2 and higher = 1 + lower-level warning and progress messages + information messages, ...)
 #    randomNumberSeed (integer) integer seed value for generating random number sequences (used by program NLLoc to generate Metropolis samples and by program Time2EQ to generate noisy time picks)
-#
-# CONTROL 1 100 
-#  
+
+CONTROL 1 100 
+
+# -----------------------------------------------------------------------------  
 # TRANS - Geographic Transformation
 # required, non-repeatable
 # Syntax 1: TRANS GLOBAL
-# Syntax 2: TRANS SIMPLE latOrig longOrig rotAngle
+# Syntax 2: TRANS SIMPLE latOrig longOrig rotAngle (DONT USE THIS !!!)
 # Syntax 3: TRANS NONE
 # Syntax 4: TRANS SDC latOrig longOrig rotAngle
 # Syntax 5: TRANS LAMBERT refEllipsoid latOrig longOrig firstStdParal secondStdParal rotAngle
@@ -103,54 +107,43 @@ param_header = """
 #    longOrig (float, min:-180.0, max:180.0) longitude in decimal degrees of the rectangular coordinates origin
 #    firstStdParal secondStdParal (float, min:-90.0, max:90.0) first and second standard parallels (meridians) in decimal degrees
 #    rotAngle (float, min:-360.0, max:360.0) rotation angle of geographic north in degrees clockwise relative to the rectangular coordinates system Y-axis
-#
-# TRANS  NONE                                             
-# 
-# MAPLINE - Geographic Maplines
-# optional, repeatable
-# Syntax 1: MAPLINE formatType name red green blue lineStyle
-# Specifies a file and drawing parameters for geographic line data.
-#
-#    formatType (choice: GMT_LATLON GMT_LONLAT XY_LONLAT GMT_LONLATDEPTH GMT_LONLATELEV_M GMT_GRD) line file format or GMT grd file format
-#    name (string) full path and file name
-#    red green blue (float, min:0.0, max:1.0) red, green and blue intensities (0.0-1.0) (not implemented)
-#    lineStyle (choice: SOLID DASHED DOTTED DASHDOT) line style (not implemented)
-#
-# MAPLINE  GMT_LONLAT ./data_geog/alaska_coasts.xy  0.0 0.0 0.0  SOLID
-# MAPLINE  GMT_LONLAT ./data_geog/alaska_rivers.xy  0.0 0.0 1.0  SOLID
-# MAPLINE  GMT_LONLAT ./data_geog/alaska.xy  0.0 0.0 0.0  SOLID
-# 
+
+TRANS  NONE
+
 # =============================================================================
 # END of Generic control file statements
 # =============================================================================
 # =============================================================================
 """
 # -----------------------------------------------------------------------------
-#%% Parameters Vel2Grid
+#%% Input Vel2Grid file structure
 
-param_vel2grid = """
+input_vel2grid = """
 # =============================================================================
 # =============================================================================
 # Vel2Grid control file statements
 # =============================================================================
 #
+# -----------------------------------------------------------------------------
 # VGOUT - Output File Root Name
 # required, non-repeatable
 # Syntax 1: VGOUT fileRoot
 # Specifies the directory path and file root name (no extension) for the output velocity grid.
 # fileRoot (string) full or relative path and file root name (no extension) for output
-#
-# VGOUT  ./model/tomo 
-#
+
+VGOUT  ./model/tomo 
+
+# -----------------------------------------------------------------------------
 # VGTYPE - Wave Type
 # required, repeatable
 # Syntax 1: VGTYPE waveType
 # Specifies the physical wave type for a velocity grid.
 #
 # WaveType (choice: P S) wave type
-#
-# VGTYPE P
-#
+
+VGTYPE P
+
+# -----------------------------------------------------------------------------
 # VGGRID - Grid Description
 # required, non-repeatable
 # Syntax 1: VGGRID xNum yNum zNum xOrig yOrig zOrig dx dy dz gridType
@@ -166,14 +159,15 @@ param_vel2grid = """
 # SLOW_2_METERS = slow**2 ((s/m)**2), SLOW_LEN = slow*dx (sec)).
 #
 # Layer 2DGrid (NOTE: num_grid_x must be = 2 for 2D grids)
-# VGGRID   175  114   52  -95.000000  -79.000000   -4.000000   1.00000   1.00000   1.00000 SLOW_LEN
-#
+
+VGGRID   175  114   52  -95.000000  -79.000000   -4.000000   1.00000   1.00000   1.00000 SLOW_LEN
+
 # -----------------------------------------------------------------------------
-# velocity model description
+# VGINP - velocity model description
+
+VGINP path/model_file_in.mod SIMUL2K 
+
 # -----------------------------------------------------------------------------
-#
-# VGINP path/model_file_in.mod SIMUL2K 
-#
 # LAYER - Velocity Model - Layer
 # optional, repeatable
 # Syntax 1: LAYER depth VpTop VpGrad VsTop VsGrad rhoTop rhoGrad
@@ -196,14 +190,15 @@ param_vel2grid = """
 # =============================================================================
 """
 # -----------------------------------------------------------------------------
-#%% Parameters Grid2Time
+#%% Input Grid2Time file structure
 
-param_grd2time = """
+input_grd2time = """
 # =============================================================================
 # =============================================================================
 # Grid2Time control file statements
 # =============================================================================
-#
+
+# -----------------------------------------------------------------------------
 # GTFILES - Input and Output File Root Name
 # required, non-repeatable
 # Syntax 1: GTFILES ttimeFileRoot outputFileRoot waveType iSwapBytesOnInput
@@ -213,9 +208,10 @@ param_grd2time = """
 #    outputFileRoot (string) full or relative path and file root name (no extension) for output travel-time and take-off angle grids
 #    waveType (choice: P S) wave type
 #    iSwapBytesOnInput (integer, min:0, max:1, default:0) flag to indicate if hi and low bytes of input velocity grid file should be swapped
-#
-# GTFILES  ./model/layer  ./time/layer P	  # uncomment to generate P travel times
-#
+
+GTFILES  ./model/layer  ./time/layer P	
+
+# -----------------------------------------------------------------------------
 # GTMODE - Program Modes
 # required, non-repeatable
 # Syntax 1: GTMODE gridMode angleMode
@@ -223,14 +219,12 @@ param_grd2time = """
 #
 #    gridMode (choice: GRID3D GRID2D) grid type (GRID3D for a 3D, Nx*Ny*Nz grid or GRID2D for a 2D, 2*Ny*Nz grid)
 #    angleMode (choice: ANGLES_YES ANGLES_NO) sets if take-off angles are calculated and an angles grid is output (ANGLES_YES for angles calulcation or ANGLES_NO for no angles calculation)
-#
-# GTMODE GRID3D ANGLES_YES
-#
+
+GTMODE GRID3D ANGLES_YES
+
 # -----------------------------------------------------------------------------
-# description of source (e.g. seismic station) for calculating travel-time field
-# -----------------------------------------------------------------------------
-#
 # GTSRCE - Source Description
+# description of source (e.g. seismic station) for calculating travel-time field
 # required, repeatable
 # Syntax 1: GTSRCE label XYZ xSrce ySrce zSrce elev
 # Syntax 2: GTSRCE label LATLON latSrce longSrce zSrce elev
@@ -254,10 +248,15 @@ param_grd2time = """
 # GTSRCE  STA   XYZ   27.25  -67.78  0.0  1.242
 # GTSRCE  CALF  LATLON   43.753  6.922  0.0  1.242
 # GTSRCE  JOU  LATLONDM  43 38.00 N  05 39.52 E   0.0   0.300
-#
+
+GTSRCE  STA   XYZ   27.25  -67.78  0.0  1.242
+
+# -----------------------------------------------------------------------------
 # Include file with STSRCE statements, this line can be placed anywhere in control file
-# INCLUDE stations_0.stz 
-# 
+
+INCLUDE stations_0.stz 
+
+# ----------------------------------------------------------------------------- 
 # GT_PLFD - Podvin and Lecomte Finite Difference
 # required, non-repeatable, for Podvin and Lecomte finite difference, must not be present otherwise
 # Syntax 1: GT_PLFD hs_eps_init message_flag
@@ -265,9 +264,9 @@ param_grd2time = """
 #
 #    hs_eps_init (float, min:0.0) fraction (typically 1.0E-3) defining the tolerated model inhomogeneity for exact initialization. A tolerance larger than 0.01 will potentially create errors larger than those involved by the F.D. scheme without any exact initialization.
 #    message_flag (integer, min:0, max:2) Message flag (0:silent, 1:few messages, 2:verbose) A negative value inhibits "clever" initialization.
-#
-# GT_PLFD  1.0e-3  0
-#
+
+GT_PLFD  1.0e-3  0
+
 # =============================================================================
 # END of Grid2Time control file statements
 # =============================================================================
@@ -275,32 +274,32 @@ param_grd2time = """
 """
 
 # -----------------------------------------------------------------------------
-#%% Parameters Loc
+#%% Input loc file structure
 
-param_loc = """
+input_loc = """
 # =============================================================================
 # =============================================================================
 # NLLoc control file statements
 # =============================================================================
-#
-# LOCSIG NonLinLoc - ALomax Scientific
-# LOCCOM Rilocalizzazione sintetici 
-# LOCFILES obs/eq001.obs NLLOC_OBS           ./time/layer  ./loc/loc
-# LOCHYPOUT SAVE_NLLOC_ALL  SAVE_HYPOINV_SUM 
-# LOCSEARCH  OCT 10 10 4 0.01 20000 5000 0 1
-# LOCGRID   175  114   48  -95.000000  -79.000000    0.000000   1.00000   1.00000   1.00000 PROB_DENSITY  SAVE
-# LOCMETH EDT_OT_WT 9999.0 4 -1 -1  -1.730 -1 0.1
-# LOCGAU 0.15 1.0 
-# LOCGAU2 0.5 0.05 1.0 
-# LOCPHASEID  P   P p G PN PG 
-# LOCQUAL2ERR 0.1 0.5 1.0 2.0 99999.9 
-# LOCPHSTAT 15 -1 9999.0 1.0 1.0 
-# LOCANGLES ANGLES_NO 5 
-# LOCMAG ML_HB 1.0 1.110 0.00189 
-# LOCELEVCORR 0 4.0P 2.87S
-# LOCSTAWT 0 -1
+
+LOCSIG NonLinLoc - ALomax Scientific
+LOCCOM Rilocalizzazione sintetici 
+LOCFILES obs/eq001.obs NLLOC_OBS           ./time/layer  ./loc/loc
+LOCHYPOUT SAVE_NLLOC_ALL  SAVE_HYPOINV_SUM 
+LOCSEARCH  OCT 10 10 4 0.01 20000 5000 0 1
+LOCGRID   175  114   48  -95.000000  -79.000000    0.000000   1.00000   1.00000   1.00000 PROB_DENSITY  SAVE
+LOCMETH EDT_OT_WT 9999.0 4 -1 -1  -1.730 -1 0.1
+LOCGAU 0.15 1.0 
+LOCGAU2 0.5 0.05 1.0 
+LOCPHASEID  P   P p G PN PG 
+LOCQUAL2ERR 0.1 0.5 1.0 2.0 99999.9 
+LOCPHSTAT 15 -1 9999.0 1.0 1.0 
+LOCANGLES ANGLES_NO 5 
+LOCMAG ML_HB 1.0 1.110 0.00189 
+LOCELEVCORR 0 4.0 2.87
+LOCSTAWT 0 -1
 # LOCTOPO_SURFACE 
-#
+
 # =============================================================================
 # END of NLLoc control file statements
 # =============================================================================
@@ -397,7 +396,7 @@ def create_vel2grid_file( control=[1, 54321],
     
     with open( path +s+ name, 'w' ) as f :
         
-        for l in param_header.splitlines() :
+        for l in input_header.splitlines() :
             
             if ("CONTROL" in l) and ("Control" not in l) and ( "Syntax" not in l ):
                 l = f"CONTROL {control[0]} {control[1]}"
@@ -413,7 +412,7 @@ def create_vel2grid_file( control=[1, 54321],
             if l.startswith( '#' ) == False :
                 print( print_prefix + l )            
             
-        for l in param_vel2grid.splitlines() :
+        for l in input_vel2grid.splitlines() :
             
             if ( "VGOUT" in l ) and ( "- Output File Root Name" not in l ) and\
                 ( "Syntax" not in l ):
@@ -429,10 +428,13 @@ def create_vel2grid_file( control=[1, 54321],
                 l = f"{print_prefix}VGGRID"
                 for vgg in vggrid :
                     l = l + f" {vgg}"
-            if  ( "VGINP" in l ) and ( vginp != [] ) and ( layer is False ):
-                if type( vginp ) == str :
-                    vginp = [ vginp ] + [ 'SIMUL2K' ] 
-                l = f"{print_prefix}VGINP {in_model_name} {vginp[1]}"   
+            if  ( "VGINP" in l ) : 
+                if ( vginp != [] ) and ( layer is False ):
+                    if type( vginp ) == str :
+                        vginp = [ vginp ] + [ 'SIMUL2K' ] 
+                    l = f"{print_prefix}VGINP {in_model_name} {vginp[1]}"
+                else :
+                    l = "# " + l
             
             if  ( layer is True ) and ( "LAYER" in l ) and \
                 ( '- Velocity Model -' not in l ) and ( 'Syntax' not in l ) and \
@@ -578,9 +580,8 @@ def create_vel2grid3d_file(
         #  section and parameter for better user understanding.
         # =============================================================================
 
-        # =============================================================================
+        # -----------------------------------------------------------------------------
         # CONTROL - Control parameters
-        # =============================================================================
         # Sets general program control parameters, such as verbosity level and the
         # random seed for generating Metropolis samples or noisy time picks.
         # 
@@ -591,11 +592,11 @@ def create_vel2grid3d_file(
         #   messageFlag (int): Verbosity of terminal messages (-1 = silent, 0 = errors,
         #                      1 = warnings and progress, 2 = detailed).
         #   randomNumberSeed (int): Seed for random number generation.
+
         CONTROL {control_message_flag} {control_random_seed}
 
-        # =============================================================================
+        # ----------------------------------------------------------------------------
         # TRANS - Geographic transformation
-        # =============================================================================
         # Specifies how geographic coordinates are transformed into a working
         # coordinate system. Use "NONE" for no transformation, or select another type
         # based on your region and needs.
@@ -608,6 +609,7 @@ def create_vel2grid3d_file(
         #   TRANS SIMPLE        - A simple Cartesian system.
         #
         # Parameters depend on the selected type (see NonLinLoc documentation).
+        
         TRANS {trans_type}
 
         # =============================================================================
@@ -615,19 +617,22 @@ def create_vel2grid3d_file(
         # =============================================================================
         # This section defines the output grid for velocity models and its parameters.
         # =============================================================================
-
+        # -----------------------------------------------------------------------------
         # VGOUT - Output file root name
         # Specifies the directory and file root name (no extension) for the output grid.
         #
         # Syntax:
         #   VGOUT fileRoot
+        
         VGOUT {vgout}
 
+        # -----------------------------------------------------------------------------
         # VGTYPE - Wave types
         # Specifies the wave types for the velocity grid. Typically "P" and/or "S".
         # 
         # Syntax:
         #   VGTYPE waveType
+
     """
     # Add wave types
     for wave_type in vgtypes:
@@ -636,6 +641,8 @@ def create_vel2grid3d_file(
     # Add VGGRID
     xnum, ynum, znum, xorig, yorig, zorig, dx, dy, dz, grid_type = vggrid_params
     content += f"""
+        
+        # -----------------------------------------------------------------------------
         # VGGRID - Grid description
         # Specifies the dimensions and properties of the velocity grid.
         #
@@ -647,8 +654,10 @@ def create_vel2grid3d_file(
         #   xOrig, yOrig, zOrig (float): Origin of the grid in km relative to geographic origin.
         #   dx, dy, dz (float): Grid spacing in km for x, y, z directions.
         #   gridType (str): Type of data stored (e.g., VELOCITY, SLOW_LEN, etc.).
-        VGGRID   {xnum}  {ynum}   {znum}  {xorig:.6f}  {yorig:.6f}   {zorig:.6f}   {dx:.5f}   {dy:.5f}   {dz:.5f} {grid_type}
 
+        VGGRID   {xnum} {ynum} {znum} {xorig:.6f} {yorig:.6f} {zorig:.6f} {dx:.5f} {dy:.5f} {dz:.5f} {grid_type}
+
+        # -----------------------------------------------------------------------------
         # VGINP - Velocity model input
         # Specifies the input file for the velocity model and its format.
         #
@@ -658,6 +667,7 @@ def create_vel2grid3d_file(
         # Parameters:
         #   modelPath (str): Path to the velocity model file.
         #   modelType (str): Type of velocity model (e.g., SIMUL2K).
+
         VGINP {vginp_path} {vginp_type}
 
         # =============================================================================
@@ -1158,7 +1168,7 @@ def create_grd2time_file( path,
     with open( path +s+ name, 'w' ) as f :
 
         # Write the parameter header to the file
-        for l in param_header.splitlines() :
+        for l in input_header.splitlines() :
             
             if ("CONTROL" in l) and ("Control" not in l) and ( 'Syntax' not in l ) :
                 l = f"CONTROL {control[0]} {control[1]}"
@@ -1177,7 +1187,7 @@ def create_grd2time_file( path,
                     print( l )
 
         # Write the grd2time parameters to the file
-        for l in param_grd2time.splitlines() :
+        for l in input_grd2time.splitlines() :
             
             if ("GTFILES" in l) and ("Input and Output File Root Name" not in l) and\
                 ("Syntax" not in l) :
@@ -1418,7 +1428,7 @@ def create_loc_file( path,
 
     with open( path +s+ name, 'w' ) as f :
         
-        for l in param_header.splitlines() :
+        for l in input_header.splitlines() :
             
             if ("CONTROL" in l) and ("Control" not in l) and ( 'Syntax' not in l )  :
                 l = f"CONTROL {control[0]} {control[1]}"
@@ -1435,7 +1445,7 @@ def create_loc_file( path,
                 if l.startswith( '#' ) == False :
                     print( print_prefix + l )
 
-        for l in param_loc.splitlines() :
+        for l in input_loc.splitlines() :
             
             if ( locsig is not None ) and ( "LOCSIG" in l ) :
                 l = f"LOCSIG {locsig}"
@@ -1954,7 +1964,7 @@ def read_hyp_tt( hyp_file ):
 
 # -----------------------------------------------------------------------------
 def read_model_file( model_data, plot=False, section=[ 0, 0, 0 ], 
-    vmin=None, vmax=None ) :
+    vmin=None, vmax=None, return_type='class', slo2vel=True, lim=None ) :
 
     """
     Reads a model file or directory of model files and 
@@ -2003,16 +2013,104 @@ def read_model_file( model_data, plot=False, section=[ 0, 0, 0 ],
                     if model_path not in file_names :
                         file_names.append( model_path )
                         grids.append( NLLGrid( model_path ) )
+                if '.time' in f :
+                    model_path = model_data +s+ f.split('.time')[0] + '.time'
+                    if model_path not in file_names :
+                        file_names.append( model_path )
+                        grids.append( NLLGrid( model_path ) )
+                if '.angle' in f :
+                    model_path = model_data +s+ f.split('.angle')[0] + '.angle'
+                    if model_path not in file_names :
+                        file_names.append( model_path )
+                        grids.append( NLLGrid( model_path ) )
+                        
+    if lim is not None :
+        
+        for i, grd in enumerate(grids) :
+            xlim = [ lim[0], lim[1] ]
+            ylim = [ lim[2], lim[3] ]
+            zlim = [ lim[4], lim[5] ]
+            
+            if xlim is None:
+                xlim = (grd.x_orig, grd.x_orig + (grd.nx - 1) * grd.dx)
+            if ylim is None:
+                ylim = (grd.y_orig, grd.y_orig + (grd.ny - 1) * grd.dy)
+            if zlim is None:
+                zlim = (grd.z_orig, grd.z_orig + (grd.nz - 1) * grd.dz)
+
+            x0, x1 = sorted(xlim)
+            y0, y1 = sorted(ylim)
+            z0, z1 = sorted(zlim)
+
+            i0 = max(0, int(np.floor((x0 - grd.x_orig) / grd.dx)))
+            i1 = min(grd.nx - 1, int(np.floor((x1 - grd.x_orig) / grd.dx)))
+            j0 = max(0, int(np.floor((y0 - grd.y_orig) / grd.dy)))
+            j1 = min(grd.ny - 1, int(np.floor((y1 - grd.y_orig) / grd.dy)))
+            k0 = max(0, int(np.floor((z0 - grd.z_orig) / grd.dz)))
+            k1 = min(grd.nz - 1, int(np.floor((z1 - grd.z_orig) / grd.dz)))
+
+            if i0 > i1 or j0 > j1 or k0 > k1:
+                raise ValueError("Crop non valido: volume vuoto")
+
+            new_array = grd.array[i0:i1+1, j0:j1+1, k0:k1+1]
+
+            new_x_orig = grd.x_orig + i0 * grd.dx
+            new_y_orig = grd.y_orig + j0 * grd.dy
+            new_z_orig = grd.z_orig + k0 * grd.dz
+
+            grd.array = new_array
+            grd.x_orig = new_x_orig
+            grd.y_orig = new_y_orig
+            grd.z_orig = new_z_orig
+            
+            grids[i] = grd
+
+    if return_type == 'array' :
+        array_list = []
+        
+        for i, g in enumerate( grids ) :
+            
+            array_list.append( g.array )
+            
+            # Convert from SLOW_LEN to VELOCITY
+            if slo2vel is True :
+                array_list[i] = ( 1/array_list[i] ) * grids[i].dx
+                
+    if return_type == 'dict' :
+        dict_list = []
+        
+        for i, g in enumerate( grids ) :
+            
+            x1d = g.x_orig + np.arange(g.nx) * g.dx
+            y1d = g.y_orig + np.arange(g.ny) * g.dy
+            z1d = g.z_orig + np.arange(g.nz) * g.dz
+
+            X, Y, Z = np.meshgrid(x1d, y1d, z1d, indexing='ij')
+            val = g.array.ravel()
+            
+            if slo2vel is True :
+                val = ( 1/val ) * g.dx
+
+            dict_list.append({
+                'x': X.ravel(),
+                'y': Y.ravel(),
+                'z': Z.ravel(),
+                'values': val } )
 
     # Plot the velocity model
     if plot is True :
+        
+        utl.plt.figure()
 
         n = len( grids )
 
         for i, A in enumerate( grids ) :
 
             # Convert from SLOW_LEN to VELOCITY
-            AA = ( 1/A.array ) * A.dx 
+            if slo2vel is True :
+                AA = ( 1/A.array ) * A.dx 
+            else :
+                AA = A.array
 
             ex = A.get_extent()
 
@@ -2032,6 +2130,7 @@ def read_model_file( model_data, plot=False, section=[ 0, 0, 0 ],
                     colorbar = False
 
                 AAs0 = np.rot90(AA[section[0],:,:], k=-1 )
+                AAs0 = AA[section[0],:,:]
                 lim0 = [ex[2], ex[3], -ex[5], -ex[4]]
 
                 ax = utl.plta( AAs0, 
@@ -2054,8 +2153,9 @@ def read_model_file( model_data, plot=False, section=[ 0, 0, 0 ],
                     colorbar = True
                 else:
                     colorbar = False
-                
+
                 AAs1 = np.fliplr( np.rot90( AA[:,section[1],:], k=-1) )
+                AAs1 = AA[:,section[1],:]   
                 lim1 = [ex[0], ex[1], -ex[5], -ex[4]]
 
                 ax = utl.plta( AAs1, 
@@ -2075,6 +2175,7 @@ def read_model_file( model_data, plot=False, section=[ 0, 0, 0 ],
             if section[2] is not None :
 
                 AAs2 = np.flipud( np.fliplr( np.rot90(AA[:,:,section[2]], k=-1) ) )
+                AAs2 = AA[:,:,section[2]]
                 lim2 = [ex[0], ex[1], ex[2], ex[3]]
 
                 ax = utl.plta( AAs2, 
@@ -2099,7 +2200,12 @@ def read_model_file( model_data, plot=False, section=[ 0, 0, 0 ],
             fig.suptitle( f"Model size: {AA.shape} \nSection: {section}")
         lsz_plot.plt.tight_layout()
 
-    return grids
+    if return_type == 'array' :
+        return array_list
+    elif return_type == 'dict' :
+        return dict_list
+    elif return_type == 'class' :
+        return grids
 
 # -----------------------------------------------------------------------------
 def create_locgrid( model=None, 
@@ -2583,13 +2689,14 @@ def read_tt_file( tt_file ) :
     return tt_dict
 
 # -----------------------------------------------------------------------------
-def read_pun_file( file, plot=False, aspect='equal', size=1, reverse_z=True ) :
+def read_pun_file( file, plot=False, aspect='equal', size=1, reverse_z=True,
+        year_4digits=True ) :
 
     f = open( file, 'r' )
 
     lines = f.readlines()
 
-    hyp_out = { 'eve':[], 'yy':[], 'mm':[], 'dd':[], 
+    pun_dict = { 'eve':[], 'yy':[], 'mm':[], 'dd':[], 
                 'h':[], 'm':[], 's':[], 
                 'lat':[], 'lon':[], 'z':[], 
                 'lon_deg':[], 'lon_min':[], 'lat_deg':[], 
@@ -2597,38 +2704,55 @@ def read_pun_file( file, plot=False, aspect='equal', size=1, reverse_z=True ) :
                 'gap':[], 'dmin':[], 'erh':[], 'erz':[], 'qm':[] } 
                 
     for i, l in enumerate( lines ) :
-        
+
+        l_split = lines[1].split()
+        date = l_split[0]
+        if len( date ) == 7 :
+            n = 1
+        if len( date ) == 6 :
+            n = 0
+
         if i == 0 :
             continue
-        hyp_out['eve'].append( int( i ) )
-        hyp_out['yy'].append( int( l[1:3] ) )
-        hyp_out['mm'].append( int( l[3:5] ) )
-        hyp_out['dd'].append( int( l[5:7] ) )
-        hyp_out['h'].append( int( l[8:10] ) )
-        hyp_out['m'].append( int( l[10:12] ) )
-        hyp_out['s'].append( float( l[12:18].replace(' ', '0') ) )
-        hyp_out['lat_deg'].append( int( l[19:21] ) ) 
-        hyp_out['lat_min'].append( float( l[22:27] ) )
-        hyp_out['lon_deg'].append( int( l[29:31] ) )
-        hyp_out['lon_min'].append( float( l[32:37] ) )
-        hyp_out['z'].append( float( l[37:44] ) ) 
-        hyp_out['mag'].append( float( l[44:51] ) )
-        hyp_out['no'].append( int( l[51:54] ) )
-        hyp_out['gap'].append( float( l[54:58] ) ) 
-        hyp_out['dmin'].append( float( l[58:63] ) ) 
-        hyp_out['rms'].append( float( l[63:68] ) ) 
-        hyp_out['erh'].append( float( l[68:73] ) ) 
-        hyp_out['erz'].append( float( l[73:78] ) ) 
-        hyp_out['qm'].append( l[78:81] )  
-   
-    for k in hyp_out :
-        hyp_out[ k ] = np.array( hyp_out[ k ] )
+        pun_dict['eve'].append( int( i ) )
+        pun_dict['yy'].append( int( l[0+n:2+n] ) )
+        pun_dict['mm'].append( int( l[2+n:4+n] ) )
+        pun_dict['dd'].append( int( l[4+n:6+n] ) )
+        pun_dict['h'].append( int( l[7+n:9+n] ) )
+        pun_dict['m'].append( int( l[9+n:11+n] ) )
+        pun_dict['s'].append( float( l[12+n:18+n].replace(' ', '0') ) )
+        pun_dict['lat_deg'].append( int( l[18+n:20+n] ) ) 
+        pun_dict['lat_min'].append( float( l[21+n:26+n] ) )
+        pun_dict['lon_deg'].append( int( l[28+n:30+n] ) )
+        pun_dict['lon_min'].append( float( l[31+n:36+n] ) )
+        pun_dict['z'].append( float( l[37+n:44+n] ) ) 
+        pun_dict['mag'].append( float( l[44+n:51+n] ) )
+        pun_dict['no'].append( int( l[51+n:54+n] ) )
+        pun_dict['gap'].append( float( l[54+n:58+n] ) ) 
+        pun_dict['dmin'].append( float( l[58+n:63+n] ) ) 
+        pun_dict['rms'].append( float( l[63+n:68+n] ) ) 
+        pun_dict['erh'].append( float( l[68+n:73+n] ) ) 
+        pun_dict['erz'].append( float( l[73+n:78+n] ) ) 
+        pun_dict['qm'].append( l[78+n:81+n] )  
+
+        # for k in pun_dict :
+        #     if i == 1 :
+        #         if len( pun_dict[k] ) != 0 : 
+        #             print( k, pun_dict[k][-1] )
+    
+    for k in pun_dict :
+        pun_dict[ k ] = np.array( pun_dict[ k ] )
          
-    hyp_out['lon'] = hyp_out['lon_deg'] + hyp_out['lon_min'] / 60
-    hyp_out['lat'] = hyp_out['lat_deg'] + hyp_out['lat_min'] / 60
+    pun_dict['lon'] = pun_dict['lon_deg'] + pun_dict['lon_min'] / 60
+    pun_dict['lat'] = pun_dict['lat_deg'] + pun_dict['lat_min'] / 60
         
     if reverse_z is True :
-        hyp_out['z'] = hyp_out['z'] * -1
+        pun_dict['z'] = pun_dict['z'] * -1
+
+    if year_4digits is True :
+        idx = pun_dict['yy'] < 50
+        pun_dict['yy'][idx] += 2000
+        pun_dict['yy'][~idx] += 1900
     
     f.close()
     
@@ -2637,20 +2761,20 @@ def read_pun_file( file, plot=False, aspect='equal', size=1, reverse_z=True ) :
         f = lsz_plot.plt.figure()
         
         lsz_plot.plt.subplot( 313, aspect=aspect )
-        lsz_plot.plt.scatter( hyp_out['lon'], hyp_out['lat'], s=size )
+        lsz_plot.plt.scatter( pun_dict['lon'], pun_dict['lat'], s=size )
         lsz_plot.plt.title( 'X-Y axis' )
         
         lsz_plot.plt.subplot( 311, aspect=aspect )
-        lsz_plot.plt.scatter( hyp_out['lon'], hyp_out['z'], s=size ) 
+        lsz_plot.plt.scatter( pun_dict['lon'], pun_dict['z'], s=size ) 
         lsz_plot.plt.title( 'X-Z axis' )
         
         lsz_plot.plt.subplot( 312, aspect=aspect )
-        lsz_plot.plt.scatter( hyp_out['lat'], hyp_out['z'], s=size )
+        lsz_plot.plt.scatter( pun_dict['lat'], pun_dict['z'], s=size )
         lsz_plot.plt.title( 'Y-Z axis' )
-        
+
         f.tight_layout()
-        
-    return hyp_out
+
+    return pun_dict
 
 # -----------------------------------------------------------------------------
 def nlloc2hyp( tt_data, file, printf=False, locqual2err=[ 0.01, 0.02, 0.08, 0.2, 99999.9 ] ):
@@ -3011,7 +3135,8 @@ def run_nlloc( path=os.getcwd(),
     Parameters:
         
         - path (str): The path where the NLLoc files will be created. 
-            Default is the current working directory.
+            Default is the current working directory. If it does not exist, 
+            it will be created.
 
         - vel2grid (bool): Flag to indicate whether to perform Vel2Grid computation.
             Default is False.
@@ -3025,13 +3150,13 @@ def run_nlloc( path=os.getcwd(),
         - stFile (str): The path to the station file. Default is None.
         
         - obsFile (str or dict): The path to the observation file or a dictionary 
-            containing travel-timeinformation. Default is None.
+            containing oservation data. Default is None.
         
-        - modelFileRoot (str): The root name of the model file. Default is 'model'+s+'layer'.
+        - modelFileRoot (str): The root name of the model file. Default is 'model/layer'.
         
-        - ttimeFileRoot (str): The root name of the travel time file. Default is 'time'+s+'layer'.
+        - ttimeFileRoot (str): The root name of the travel time file. Default is 'time/layer'.
         
-        - outputFileRoot (str): The root name of the output file. Default is 'loc'+s+'loc'.
+        - outputFileRoot (str): The root name of the output file. Default is 'loc/loc'.
         
         - loc_file (str): The path to the location file. Default is 'loc.in'.
         
@@ -3421,7 +3546,7 @@ def run_nlloc( path=os.getcwd(),
     return path +s+ name
     
 # -----------------------------------------------------------------------------    
-def read_loc( path, plot=False, aspect='auto', reverse_z=True, size=None ) :
+def read_loc( path=None, plot=False, aspect='auto', reverse_z=True, size=None, filename=None ):
     """
     Read earthquake location data from files in a given directory (usualy called loc).
     
@@ -3442,10 +3567,14 @@ def read_loc( path, plot=False, aspect='auto', reverse_z=True, size=None ) :
 
     file_name = [] 
 
-    for root, dirs, files in os.walk( path ):
-        for file in sorted(files):
-            if ( file.endswith('.hyp') ) and ( '.sum.' not in file ) and ( 'last.' not in file ):
-                file_name.append( file )
+    if path is not None :
+        for root, dirs, files in os.walk( path ):
+            for file in sorted(files):
+                if ( file.endswith('.hyp') ) and ( '.sum.' not in file ) and ( 'last.' not in file ):
+                    file_name.append( file )
+    
+    if filename is not None :
+        file_name = [ filename]
 
     eve_dict = { 'eve':[], 'x':[], 'y':[], 'z':[], 'yy':[], 'mm':[], 'dd':[], 'h':[], 
                  'm':[], 's':[], 'pmax':[], 'mfmin':[], 'mfmax':[], 'rms':[], 'nphs':[],
@@ -3466,10 +3595,13 @@ def read_loc( path, plot=False, aspect='auto', reverse_z=True, size=None ) :
                  'stdErr':[], 'minDist':[], 'maxDist':[], 'medDist':[] }
 
     n1 = 0
-
     for f in file_name :
+        # print( file_name)
 
-        fi = open( path +s+ f, 'r' )
+        if path is not None :
+            fi = open( path +s+ f, 'r' )
+        else :
+            fi = open( f, 'r' )
         linesi = fi.readlines()
         fi.close()
         n1 += 1
@@ -4108,7 +4240,7 @@ def nlloc2simul( tt_data = None,
             line_1 = f"{int(y0d):.0f} {float(y0m):.2f} {int(x0d):.0f} {float(x0m):.2f} {rota} {nzco} {cmerid}"
             f.write( line_1 + '\n' )
 
-            line_2 = f'{ np.size(st_data['lon']) }'
+            line_2 = f"{ np.size(st_data['lon']) }"
             f.write( line_2 + '\n' )
 
             for i in range( np.size(st_data['lon']) ):
@@ -4128,9 +4260,9 @@ def nlloc2simul( tt_data = None,
 
                     st_data['lon_dir'] = ''
 
-                line_i = f'  {st_data['st'][i]}{int(st_data['lat_deg'][i]): >2d}{st_data['lat_dir']}{st_data['lat_min'][i]: >5.2f}'+\
-                    f'{int(st_data['lon_deg'][i]): >4d}{st_data['lon_dir']}{st_data['lon_min'][i]: >5.2f}'+\
-                    f'{int(st_data['elev'][i]): >5d} 0.00 0.00  0  0'
+                line_i = f"  {st_data['st'][i]}{int(st_data['lat_deg'][i]): >2d}{st_data['lat_dir']}{st_data['lat_min'][i]: >5.2f}"+\
+                    f"{int(st_data['lon_deg'][i]): >4d}{st_data['lon_dir']}{st_data['lon_min'][i]: >5.2f}"+\
+                    f"{int(st_data['elev'][i]): >5d} 0.00 0.00  0  0"
                 f.write( line_i + '\n'  )
 
         f.close()
@@ -5410,7 +5542,7 @@ def read_simulmod_file(
     ) :
 
     """
-    Read a model file and extract the model information.
+    Read Simulps2012/17 model file and extract the model information.
 
     Parameters:
         - file (str): The path to the model file.
