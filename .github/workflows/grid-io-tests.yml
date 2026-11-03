@@ -19,5 +19,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install test dependencies
         run: python -m pip install numpy scipy matplotlib pytest
-      - name: Test native grid read/write
-        run: MPLBACKEND=Agg python -m pytest tests/test_grid_io.py tests/test_model_tools.py -q
+      - name: Build NonLinLoc Grid2Time from bundled C source
+        run: |
+          cmake -S NllocPy/src -B /tmp/nlloc-grid-build
+          cmake --build /tmp/nlloc-grid-build --target Grid2Time -j 2
+      - name: Test native grid read/write and Grid2Time integration
+        run: MPLBACKEND=Agg python -m pytest tests/test_grid_io.py tests/test_model_tools.py tests/test_grid2time_integration.py -q
