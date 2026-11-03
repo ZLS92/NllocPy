@@ -60,6 +60,60 @@ assert restored.array.shape == vp.shape
 
 The native implementation is intentionally limited to regular grids. Reading `FLOAT`/`DOUBLE` model and travel-time buffers and packed take-off angle buffers is supported; writing packed angle buffers is not. The header stores projection parameters but does not calculate coordinate transformations. For cross-platform files, the optional `byteorder` argument controls binary endianness. Test grid I/O with `python -m pytest tests/test_grid_io.py` (requires pytest).
 
+## Unordered XYZ velocity models and correctly oriented plots
+
+Input is a **dictionary of 1D arrays**, with one row per velocity sample:
+\`{'x': x, 'y': y, 'z': z, 'vp': vp, 'vs': vs}\`.
+Rows may be in any order, even randomly shuffled. The importer always sorts
+\`(x,y,z,vp,vs)\` together, checks for duplicate or missing nodes, and writes a
+regular 3D array indexed **[X, Y, depth]**. The NonLinLoc binary buffer stores
+**Z fastest, followed by Y, then X**. Distances are in **km** and velocities
+are in **km/s**.
+
+**Vertical sign must be explicit**. By default \`z_positive='up'\` interprets
+input Z as elevation and converts to NonLinLoc depth positive down. For
+already-positive depths, specify \`z_positive='down'\`. Sorting is automatic;
+vertical sign is *not* guessed from the values.
+
+\`\`\`python
+import numpy as np
+from NllocPy.nlloc import create_model_file, read_model_file
+
+# x, y, z, vp and vs are equally-sized 1D arrays; rows may be unordered.
+model = {'x': x, 'y': y, 'z': z, 'vp': vp, 'vs': vs}
+
+p_file, s_file, grid = create_model_file(
+    model=model, path="model", name="layer",
+    step=0.5, z_positive="down",
+    proj_name="NONE", validate_output=True
+)
+# [YZ at X index 5, XZ at Y index 10, XY at depth index 3]
+grids = read_model_file(p_file, plot=True, section=(5, 10, 3))
+# Returned dictionary uses NonLinLoc depth-positive-down.
+points = read_model_file(p_file, return_type="dict")[0]
+\`\`\`
+
+Complete regular input grids are **reordered without interpolation**. If nodes
+are missing or you request a different grid resolution, set
+\`interpolate=True\` and choose \`method="nearest"\` or \`"linear"\`; SciPy is
+only needed for this optional resampling step. Duplicate coordinates are
+rejected rather than silently averaged. All generated velocity grids have
+uniform \`dx=dy=dz\`; non-isotropic grids require resampling.
+
+The XY plot shows X increasing rightward and Y upward. The XZ and YZ
+sections put **depth increasing downward**, using actual grid-node extents
+and the corresponding unrotated/transposed NumPy slices. \`SLOW_LEN\`
+values are displayed as velocity (km/s), and time grids stay in seconds.
+Model read/write validation is enabled by default.
+
+Tests for random input order, P/S round trips, C-compatible buffer offsets,
+vertical sign, crop extents and plot pixel orientation run under GitHub
+Actions. Execute locally with:
+
+\`\`\`bash
+MPLBACKEND=Agg python -m pytest tests/test_grid_io.py tests/test_model_tools.py -q
+\`\`\`
+
 ## 👤 Attribution
 
 - **NllocPy** was developed and is maintained by **Dr. Luigi Sante Zampa**.
