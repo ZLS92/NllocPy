@@ -1,0 +1,27 @@
+name: Native NonLinLoc grid I/O
+
+on:
+  push:
+    branches: [feature/native-nll-grid-io]
+  pull_request:
+    branches: [main]
+
+jobs:
+  grid-io:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install test dependencies
+        run: python -m pip install numpy scipy matplotlib pytest
+      - name: Build NonLinLoc Grid2Time from bundled C source
+        run: |
+          cmake -S NllocPy/src -B /tmp/nlloc-grid-build
+          cmake --build /tmp/nlloc-grid-build --target Grid2Time -j 2
+      - name: Test native grid read/write and Grid2Time integration
+        run: MPLBACKEND=Agg python -m pytest tests/test_grid_io.py tests/test_model_tools.py tests/test_grid2time_integration.py -q
