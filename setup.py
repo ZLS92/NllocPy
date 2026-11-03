@@ -19,5 +19,5 @@ setup(
   classifiers=classifiers,
   keywords='calculator', 
   packages=find_packages(),
-  install_requires=["nllgrid" ],
+  install_requires=["numpy>=1.23" ],
 )
