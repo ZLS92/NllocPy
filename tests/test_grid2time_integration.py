@@ -42,7 +42,7 @@ GT_PLFD 1.0e-3 0
     run = subprocess.run([str(exe), str(params)], cwd=tmp_path,
                          capture_output=True, text=True, timeout=120)
     assert run.returncode == 0, (run.stdout + '\n' + run.stderr)[-5000:]
-    root = tmp_path / 'time/layer.P.time.STA'
+    root = tmp_path / 'time/layer.P.STA.time'
     assert Path(str(root) + '.buf').exists(), (
         'Grid2Time did not generate travel-time file; output files:\n'
         + '\n'.join(str(p.relative_to(tmp_path)) for p in tmp_path.rglob('*'))
