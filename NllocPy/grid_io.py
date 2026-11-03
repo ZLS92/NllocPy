@@ -228,11 +228,11 @@ class NLLGrid:
     def get_extent(self):
         """Extent compatible with NllocPy's existing plotting convention."""
         return (self.x_orig - self.dx / 2,
-                self.x_orig + self.nx * self.dx + self.dx / 2,
+                self.x_orig + (self.nx - 0.5) * self.dx,
                 self.y_orig - self.dy / 2,
-                self.y_orig + self.ny * self.dy + self.dy / 2,
+                self.y_orig + (self.ny - 0.5) * self.dy,
                 self.z_orig - self.dz / 2,
-                self.z_orig + self.nz * self.dz + self.dz / 2)
+                self.z_orig + (self.nz - 0.5) * self.dz)
 
     def get_xyz(self, i, j, k):
         return (self.x_orig + i * self.dx,
