@@ -1,9 +1,31 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Tue Feb  8 15:40:01 2022
+"""Utilities to build and read NonLinLoc input/output files.
 
-@author: Luigi Sante Zampa
+This module contains helper functions used to generate the control files consumed
+by the NonLinLoc package (for example ``vel2grid.in``, ``grd2time.in`` and
+``loc.in``), as well as functions to write travel-time tables, read results and
+prepare data for seismic relocation workflows.
+
+The public API is intentionally centered on small, composable generators: one
+function creates a control file, another writes the travel-time observations,
+and other helpers read back the generated outputs.
+
+Example:
+    >>> from NllocPy.nlloc import create_tt_file, create_loc_file
+    >>> tt_file = create_tt_file(
+    ...     "data/tt.txt",
+    ...     eve=["evt_001"],
+    ...     st_name=["STA01"],
+    ...     yy=[2024], mm=[1], dd=[1], h=[0], m=[0], s=[0.0],
+    ... )
+    >>> loc_file = create_loc_file(
+    ...     path="data",
+    ...     obsFile="events.obs",
+    ...     locgrid=[20, 20, 10, -95, -79, 0, 1, 1, 1, "PROB_DENSITY", "SAVE"],
+    ...     ttimeFileRoot="time/layer",
+    ...     outputFileRoot="loc/loc",
+    ... )
 """
 
 # -----------------------------------------------------------------------------
@@ -310,18 +332,28 @@ LOCSTAWT 0 -1
 
 # -----------------------------------------------------------------------------
 def create_datetime_str( tt_data, dtype='datetime' ):
-    """
-    Create a datetime string from the observation data.
+    """Create a datetime string from travel-time observation records.
 
-    Parameters:
-    -----------
-    tt_data : dict
-        A dictionary containing observation data with keys 'yy', 'mm', 'dd', 'h', 'm', 's'.
+    Parameters
+    ----------
+    tt_data : dict or str
+        Observation data as a dictionary with keys such as ``yy``, ``mm``, ``dd``,
+        ``h``, ``m`` and ``s``. A string can also be passed and will be parsed by
+        :func:`utils.parse_tt_file`.
+    dtype : {'datetime', 'date'}, optional
+        Output format. ``'datetime'`` returns a compact YYYYMMDDHHMMSS string with
+        fractional seconds, while ``'date'`` returns a YYYYMMDD string.
 
-    Returns:
-    --------
-    datetime_str : str
-        A formatted string representing the date and time.
+    Returns
+    -------
+    numpy.ndarray
+        Array of strings containing the formatted dates/times.
+
+    Example
+    -------
+    >>> data = {'yy': [2024], 'mm': [2], 'dd': [9], 'h': [12], 'm': [30], 's': [12.5]}
+    >>> create_datetime_str(data)
+    array(['20240209123012.50'], dtype=object)
     """
     
     if type( tt_data ) == str :
@@ -368,6 +400,58 @@ def create_vel2grid_file( control=[1, 54321],
                           section=[ 0, None, None ],
                           printf=True,
                           print_prefix="\t" ) :
+    """Generate a ``vel2grid`` control file for building a model grid.
+
+    This helper assembles the parameters required by the NonLinLoc ``vel2grid``
+    program, writes them to disk and optionally prints them to the console. It is
+    typically used to create a velocity model grid starting from an input
+    velocity model or from a layered model description.
+
+    Parameters
+    ----------
+    control : list, optional
+        Control parameters as ``[message_flag, random_number_seed]``.
+    trans : str or list, optional
+        Geographic transformation definition to be written into the file.
+    vgout : str, optional
+        Output file root for the generated grid.
+    path : str, optional
+        Directory where the control file and related model files are written.
+    name : str, optional
+        Name of the control file.
+    vpvs : float, optional
+        Ratio used to derive S-wave velocities from P-wave velocities.
+    vgtype : list, optional
+        Wave type(s), typically ``['P']`` or ``['S']``.
+    vggrid : list, optional
+        Grid definition parameters.
+    vginp : str or list, optional
+        Input model file or model descriptor.
+    layer : bool, optional
+        If ``True``, generate a layered model definition.
+    depth, vp_top, vp_grad, vs_top, vs_grad, den_top, den_grad : list, optional
+        Parameters for layered model generation.
+    printf : bool, optional
+        If ``True``, print the content of the generated control file.
+
+    Returns
+    -------
+    str
+        Absolute path to the created control file.
+
+    Example
+    -------
+    >>> model_file = create_vel2grid_file(
+    ...     path="./data",
+    ...     vgout="layer",
+    ...     vgtype=["P"],
+    ...     vggrid=[175, 114, 52, -95.0, -79.0, -4.0, 1.0, 1.0, 1.0, "SLOW_LEN"],
+    ...     vginp="./model/model_file_in.mod",
+    ...     printf=False,
+    ... )
+    >>> model_file
+    './data/vel2grid.in'
+    """
 
     os.makedirs( path, exist_ok=True )
     os.makedirs( path+s+'model', exist_ok=True )
@@ -1241,44 +1325,56 @@ def create_loc_file( path,
                      printf=True, 
                      print_prefix="\t",
                      start_clean=True):
-    
-    """
-    Create a location file for NonLinLoc.
-    For more information on the parameters, see the NonLinLoc documentation at:
-    http://alomax.free.fr/nlloc/soft7.00/control.html#_NLLoc_
-    ( link to the "NLLoc control file statements" section of the webpage http://alomax.free.fr/nlloc/ )
+    """Create a NonLinLoc ``loc.in`` control file for relocation runs.
 
-    Parameters:
-        - path (str): The path where the location file will be created.
-        - obsFile (str): The path to the observation file or the name of the observation file if it exists in the given path.
-        - locgrid (list, optional): The locgrid list specifying the grid parameters. Default is an empty list.
-        - obsFileType (str, optional): The type of observation file. Default is "NLLOC_OBS".
-        - control (list, optional): The control parameters for NonLinLoc. Default is [1, 54321].
-        - trans (str, optional): The transformation type. Default is "NONE".
-        - name (str, optional): The name of the location file. Default is "loc.in".
-        - locsig (str, optional): The signature for the location file. Default is " NonLinLoc - ALomax Scientific".
-        - loccom (str, optional): The comment for the location file. Default is an empty string.
-        - lochypout (str, optional): The type of output for the hypocenter. Default is "SAVE_NLLOC_ALL".
-        - locsearch (list, optional): The search parameters for NonLinLoc. Default is ["OCT", 10, 10, 4, 0.01, 20000, 5000, 0, 1].
-        - ttimeFileRoot (str, optional): The root name of the travel time files. Default is "time"+s+"layer".
-        - outputFileRoot (str, optional): The root name of the output files. Default is "loc"+s+"loc".
-        - locmeth (list, optional): The method parameters for NonLinLoc. Default is ["EDT_OT_WT", 9999.0, 4, -1, -1, -1.730, -1, 0.1].
-        - locgau (list, optional): The Gaussian parameters for NonLinLoc. Default is [0.15, 1.0, ''].
-        - locgau2 (list, optional): The second Gaussian parameters for NonLinLoc. Default is [0.05, 0.5, ''].
-        - locqual2err (list, optional): The quality to error conversion parameters for NonLinLoc. Default is [0.1, 0.5, 1, 2, 99999.9].
-        - locphstat (list, optional): The travel-time statistics parameters for NonLinLoc. Default is [15, -1, 9999.0, 1.0, 1.0].
-        - locangles (list, optional): The angle parameters for NonLinLoc. Default is ["ANGLES_NO", 5].
-        - locmag (list, optional): The magnitude parameters for NonLinLoc. Default is ["ML_HB", 1.0, 1.11, 0.00189].
-        - locphaseid (list, optional): The phase identification parameters for phases. Default is ["P", "p", "G", "PN", "PG", "S", "s", "G", "SN", "SG"].
-        - locelevcorr (list, optional): The elevation correction parameters for NonLinLoc. Default is an empty list.
-        - loctopo_surface (list, optional): The topographic surface parameters for NonLinLoc. Default is an empty list.
-        - flagDumpDecimation (int, optional): The flag for dump decimation. Default is 1.
-        - all_files_in (bool, optional): Flag to indicate if all files should be copied to the specified path. Default is True.
-        - printf (bool, optional): Flag to indicate if the lines should be printed. Default is True.
-        - start_clean (bool, optional): Flag to indicate if the output directory should be cleaned before creating the location file. Default is True.
-        
-        Returns:
-            str: The path to the created location file.
+    This function assembles a complete location configuration using the
+    observation file, the travel-time model tree and the grid definition. It is
+    the primary helper for preparing a relocation job for NonLinLoc.
+
+    Parameters
+    ----------
+    path : str
+        Directory where the control file will be written.
+    obsFile : str
+        Path to the observation file or a filename already present in ``path``.
+    locgrid : list or str, optional
+        Grid definition, either as a list of values or as a path to a model file.
+    obsFileType : str, optional
+        Observation-file type as expected by NonLinLoc, by default ``"NLLOC_OBS"``.
+    control : list, optional
+        Generic control values, typically ``[message_flag, random_seed]``.
+    trans : str, optional
+        Geographic transformation string. If omitted, it is inferred from a model
+        file when possible.
+    name : str, optional
+        Name of the generated localization parameter file.
+    locsig, loccom, lochypout, locsearch, ttimeFileRoot, outputFileRoot : various
+        Parameters used to fill the location control file.
+    printf : bool, optional
+        If ``True``, the generated content is printed to stdout.
+
+    Returns
+    -------
+    str
+        Path to the generated ``loc.in`` file.
+
+    Example
+    -------
+    >>> loc_file = create_loc_file(
+    ...     path="./run",
+    ...     obsFile="./obs/eq001.obs",
+    ...     locgrid=[175, 114, 48, -95.0, -79.0, 0.0, 1.0, 1.0, 1.0, "PROB_DENSITY", "SAVE"],
+    ...     ttimeFileRoot="time/layer",
+    ...     outputFileRoot="loc/loc",
+    ...     printf=False,
+    ... )
+    >>> loc_file
+    './run/loc.in'
+
+    See also
+    --------
+    create_tt_file : write a travel-time observation file consumed by ``loc.in``.
+    create_vel2grid_file : build the velocity model grid used before locating.
     """
     os.makedirs( path, exist_ok=True )
 
@@ -1596,36 +1692,47 @@ def create_tt_file( file_path_name,
                        amplitude=None, 
                        period=None,
                        priorwt=None ) :
-    
-    """
-    Create a travel time file with the given parameters and save it to the specified file path.
-    
-    Parameters:
+    """Create a NonLinLoc travel-time observation file.
 
-        - file_path_name (str): The path and name of the file to save the travel time data.
-        - tt_dict (dict, optional): A dictionary containing travel time data. Default is None.
-        - eve (array-like, optional): Event identifiers. Default is None.
-        - st_name (array-like, optional): Station names. Default is None.
-        - instrument (array-like, optional): Instrument identifiers. Default is None.
-        - component (array-like, optional): Component identifiers. Default is None.
-        - p_phase_onset (array-like, optional): P-phase onset times. Default is None.
-        - phase_descriptor (array-like, optional): Phase descriptors. Default is None.
-        - first_motion (array-like, optional): First motion indicators. Default is None.
-        - yy (array-like, optional): Years. Default is None.
-        - mm (array-like, optional): Months. Default is None.
-        - dd (array-like, optional): Days. Default is None.
-        - h (array-like, optional): Hours. Default is None.
-        - m (array-like, optional): Minutes. Default is None.
-        - s (array-like, optional): Seconds. Default is None.
-        - err (array-like, optional): Error types. Default is None.
-        - errmag (array-like, optional): Error magnitudes. Default is None.
-        - coda_duration (array-like, optional): Coda durations. Default is None.
-        - amplitude (array-like, optional): Amplitudes. Default is None.
-        - period (array-like, optional): Periods. Default is None.
-        - priorwt (array-like, optional): Prior weights. Default is None.
-    
-    Returns:
-        str: The path and name of the created travel time file.
+    The function writes a text file with the fields required by the relocation
+    workflow. It accepts either explicit arrays passed as arguments or a single
+    ``tt_dict`` dictionary containing the same information.
+
+    Parameters
+    ----------
+    file_path_name : str
+        Output filename or path where the travel-time file will be saved.
+    tt_dict : dict, optional
+        Dictionary containing the observation data.
+    eve, st_name, instrument, component, p_phase_onset, phase_descriptor, first_motion : array-like, optional
+        Event id, station name, instrument code, component, onset and phase fields.
+    yy, mm, dd, h, m, s : array-like, optional
+        Date and time fields for each observation.
+    err, errmag, coda_duration, amplitude, period, priorwt : array-like, optional
+        Optional metadata such as errors and amplitudes.
+
+    Returns
+    -------
+    str
+        Path to the written file.
+
+    Example
+    -------
+    >>> tt_file = create_tt_file(
+    ...     "data/tt.txt",
+    ...     eve=["evt_001"],
+    ...     st_name=["STA01"],
+    ...     yy=[2024], mm=[2], dd=[9], h=[12], m=[30], s=[12.5],
+    ...     phase_descriptor=["P"],
+    ...     p_phase_onset=[12.5],
+    ... )
+    >>> tt_file
+    'data/tt.txt'
+
+    Notes
+    -----
+    The expected values are the same used by the NonLinLoc travel-time format,
+    so this function is usually called before creating a ``loc.in`` file.
     """
 
 
