@@ -30,7 +30,7 @@ Example:
 
 # -----------------------------------------------------------------------------
 # Import libraries
-from nllgrid import NLLGrid
+from .grid_io import NLLGrid, velocity_to_slow_len
 from . import utils as utl
 from . import plot as lsz_plot
 from . import raster_tools as rt
@@ -875,9 +875,7 @@ def create_model_file( model=None,
         # Vp = utl.sp.interpolate.griddata( (x,y,z), vp, (X,Y,Z), method=method )
 
     # Create the model file for P-wave velocities (slowness in s/km)
-    Vp = np.where(Vp == 0, 1e-10, Vp)
-    slow_len = ( 1 / Vp  ) * step * 1.0
-    grd.array = slow_len.astype( float )
+    grd.array = velocity_to_slow_len(Vp, step)
     grd.dy = step #km
     grd.dx = step #km
     grd.dz = step #km
@@ -906,9 +904,7 @@ def create_model_file( model=None,
             # Vs = utl.sp.interpolate.griddata( (x,y,z), vs, (X,Y,Z), method=method )
 
         # Create the model file for P-wave velocities (slowness in s/km)
-        Vs = np.where(Vs == 0, 1e-10, Vs)
-        slow_len = ( 1 / Vs  ) * step * 1.0
-        grd.array = slow_len.astype( float )
+        grd.array = velocity_to_slow_len(Vs, step)
         file_S_grid = path +s+ name + '.S.mod.buf'
         grd.basename = file_S_grid.split( '.buf' )[0]
         grd.write_hdr_file()
