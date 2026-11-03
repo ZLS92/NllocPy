@@ -43,7 +43,11 @@ GT_PLFD 1.0e-3 0
                          capture_output=True, text=True, timeout=120)
     assert run.returncode == 0, (run.stdout + '\n' + run.stderr)[-5000:]
     root = tmp_path / 'time/layer.P.time.STA'
-    assert Path(str(root) + '.buf').exists()
+    assert Path(str(root) + '.buf').exists(), (
+        'Grid2Time did not generate travel-time file; output files:\n'
+        + '\n'.join(str(p.relative_to(tmp_path)) for p in tmp_path.rglob('*'))
+        + '\nSTDOUT:\n' + run.stdout + '\nSTDERR:\n' + run.stderr
+    )
     t = NLLGrid(str(root))
     assert t.type == 'TIME'
     assert t.array.shape == (9, 9, 7)
