@@ -97,8 +97,15 @@ def audit_module(path, *, strict=False):
 
         if not doc:
             problems.append(f"L{node.lineno}: missing docstring for {node.name}")
-        elif not all(part in doc for part in ("Parameters", "Returns", "Examples")):
-            problems.append(f"L{node.lineno}: incomplete docstring for {node.name}")
+        else:
+            # Classes describe their constructor parameters; they do not
+            # return values, so a Returns section is not appropriate.
+            required = ("Parameters", "Examples")
+            if not isinstance(node, ast.ClassDef):
+                required = ("Parameters", "Returns", "Examples")
+
+            if not all(part in doc for part in required):
+                problems.append(f"L{node.lineno}: incomplete docstring for {node.name}")
 
         for inner in ast.walk(node):
             if inner is node:
