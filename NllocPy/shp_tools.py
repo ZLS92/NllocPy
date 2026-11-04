@@ -1,15 +1,18 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Oct 13 17:05:39 2020
-
-@author: zampa
-"""
-
+# =============================================================================
+# Author: Luigi Sante Zampa
+# Affiliation: NllocPy project (institutional affiliation not specified)
+# Created: 2020-10-13
+# Last modified: 2026-11-04
+#
+# Purpose:
+#   Vector geospatial and shapefile helpers based on GDAL/OGR and NumPy.
+# =============================================================================
 # -----------------------------------------------------------------------------
-import os 
-mdir = os.path.dirname( os.path.abspath( __file__ ) )
-import sys 
-sys.path.append( mdir )
+# Import external libraries
+# -----------------------------------------------------------------------------
+import os
+import sys
+import time
 
 from osgeo import gdal, ogr, osr
 import numpy as np
