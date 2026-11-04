@@ -76,6 +76,7 @@ Run the strict checker for modern modules:
 
 \`\`\`bash
 python tools/check_python_style.py --strict
+python tools/check_python_style.py --all  # Advisory full-package report.
 MPLBACKEND=Agg python -m pytest tests/test_grid_io.py tests/test_model_tools.py tests/test_table_tools.py
 \`\`\`
 
