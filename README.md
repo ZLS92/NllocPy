@@ -114,6 +114,27 @@ Actions. Execute locally with:
 MPLBACKEND=Agg python -m pytest tests/test_grid_io.py tests/test_model_tools.py -q
 \`\`\`
 
+## Python coding conventions and tabular data
+
+NllocPy follows the maintainability rules in [CONTRIBUTING.md](CONTRIBUTING.md).
+New grid, model and table modules contain documented standalone functions,
+state-only classes and explicit NumPy-based array handling.
+
+For dictionary/DataFrame conversion use:
+```python
+from NllocPy.table_tools import to_field_dict, restore_field_table
+
+fields = to_field_dict(input_data)  # Mapping or optional pandas DataFrame.
+# ... process the aligned 1D fields in a dictionary ...
+result = restore_field_table(fields, template=input_data)
+```
+
+Pandas is **optional**; numerical methods keep arrays inside dictionaries.
+The native 3D model builder accepts either the 1D field dictionary or a
+DataFrame with identical columns, preserving the association of XYZ and
+velocity samples. Legacy modules are being migrated incrementally to avoid
+changes to established scientific calculations.
+
 ## 👤 Attribution
 
 - **NllocPy** was developed and is maintained by **Dr. Luigi Sante Zampa**.
