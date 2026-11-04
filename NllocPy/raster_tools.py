@@ -1,14 +1,21 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Oct 24 17:26:35 2019
-
-@author: lzampa
-"""
-
+# =============================================================================
+# Author: Luigi Sante Zampa
+# Affiliation: NllocPy project (institutional affiliation not specified)
+# Created: 2019-10-24
+# Last modified: 2026-11-04
+#
+# Purpose:
+#   Raster reading, processing, resampling, spatial transformations and visualization.
+# =============================================================================
+# -----------------------------------------------------------------------------
+# Import external libraries
 # -----------------------------------------------------------------------------
 from . import utils as utl
 from . import shp_tools as shp
 
+# -----------------------------------------------------------------------------
+# Shared dependencies and static configuration
+# -----------------------------------------------------------------------------
 os = utl.os
 gdal = utl.gdal
 ogr = utl.ogr
