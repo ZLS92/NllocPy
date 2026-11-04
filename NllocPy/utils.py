@@ -1,10 +1,14 @@
-# -*- coding: utf-8 -*-lzampa
-"""
-Created on Wed Oct 14 18:58:52 2020
-
-@author: lzampa
-"""
-
+# =============================================================================
+# Author: Luigi Sante Zampa
+# Affiliation: NllocPy project (institutional affiliation not specified)
+# Created: 2020-10-14
+# Last modified: 2026-11-04
+#
+# Purpose:
+#   General-purpose numerical, geodetic, coordinate and file utilities shared by the NllocPy modules.
+# =============================================================================
+# -----------------------------------------------------------------------------
+# Import external libraries
 # -----------------------------------------------------------------------------
 from matplotlib.widgets import LassoSelector
 from matplotlib.colors import LightSource
@@ -12,7 +16,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from datetime import datetime, timedelta
 from matplotlib.path import Path
 from matplotlib import cm
-from matplotlib.path import Path
 from osgeo import gdal, osr, ogr
 import os
 import pyproj as prj
@@ -32,6 +35,11 @@ import html
 import io 
 import pdfkit
 
+from .table_tools import is_dataframe, to_field_dict, restore_field_table
+
+# -----------------------------------------------------------------------------
+# Shared geodetic constants and settings
+# -----------------------------------------------------------------------------
 # Disable gdal exceptions
 gdal.UseExceptions()
 
