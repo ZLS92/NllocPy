@@ -1,13 +1,15 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Nov 21 22:32:47 2020
-
-@author: lzampa
-"""
-
+# =============================================================================
+# Author: Luigi Sante Zampa
+# Affiliation: NllocPy project (institutional affiliation not specified)
+# Created: 2020-11-21
+# Last modified: 2026-11-04
+#
+# Purpose:
+#   Visualization utilities, map figures, sections and interactive plots for NllocPy.
+# =============================================================================
 # -----------------------------------------------------------------------------
-# Import libraries
-
+# Import external libraries
+# -----------------------------------------------------------------------------
 from . import utils as utl
 from . import raster_tools as rt
 
