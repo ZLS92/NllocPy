@@ -45,29 +45,25 @@ _MAX_GRID_NODES = 20_000_000
 # Validate and normalize unordered XYZ tables
 # =============================================================================
 
-# =============================================================================
-# Validate and normalize unordered XYZ tables
-# =============================================================================
-
 # -----------------------------------------------------------------------------
 def _positive_vertical(z_positive):
     """Validate the input vertical convention.
-    
-        Parameters
-        ----------
-        z_positive : {'up', 'down'}
-            'up' for altitude/elevation; 'down' for seismic depth.
-    
-        Returns
-        -------
-        bool
-            True when Z must be negated to obtain NonLinLoc depth.
-    
-        Examples
-        --------
-        >>> _positive_vertical('up')
-        True
-        """
+
+    Parameters
+    ----------
+    z_positive : {'up', 'down'}
+        'up' for altitude/elevation; 'down' for seismic depth.
+
+    Returns
+    -------
+    bool
+        True when Z must be negated to obtain NonLinLoc depth.
+
+    Examples
+    --------
+    >>> _positive_vertical('up')
+    True
+    """
     if z_positive not in ('up', 'down'):
         raise ValueError("z_positive must be 'up' (elevation) or 'down' (depth)")
     output = z_positive == 'up'
@@ -77,31 +73,31 @@ def _positive_vertical(z_positive):
 # -----------------------------------------------------------------------------
 def _columns(model, z_positive):
     """Normalize input columns into aligned 1D numeric arrays.
-    
-        Parameters
-        ----------
-        model : dict or pandas.DataFrame
-            Table with x, y, z, vp and optional vs columns.
-        z_positive : {'up', 'down'}
-            Coordinate convention of the input Z column.
-    
-        Returns
-        -------
-        dict
-            Validated arrays in km / km/s, with positive-down depth.
-    
-        Raises
-        ------
-        ValueError
-            Missing fields, inconsistent lengths, non-finite data or velocities
-            that are not strictly positive.
-    
-        Examples
-        --------
-        >>> cols = _columns({'x':[0], 'y':[0], 'z':[-2], 'vp':[5]}, 'up')
-        >>> cols['z'].tolist()
-        [2.0]
-        """
+
+    Parameters
+    ----------
+    model : dict or pandas.DataFrame
+        Table with x, y, z, vp and optional vs columns.
+    z_positive : {'up', 'down'}
+        Coordinate convention of the input Z column.
+
+    Returns
+    -------
+    dict
+        Validated arrays in km / km/s, with positive-down depth.
+
+    Raises
+    ------
+    ValueError
+        Missing fields, inconsistent lengths, non-finite data or velocities
+        that are not strictly positive.
+
+    Examples
+    --------
+    >>> cols = _columns({'x':[0], 'y':[0], 'z':[-2], 'vp':[5]}, 'up')
+    >>> cols['z'].tolist()
+    [2.0]
+    """
     # Convert an optional pandas DataFrame once, at the API boundary.
     model = to_field_dict(model, copy=False)
     keys = ('x', 'y', 'z', 'vp')
@@ -129,30 +125,30 @@ def _columns(model, z_positive):
 # -----------------------------------------------------------------------------
 def _axis(lo, hi, step):
     """Build a regular axis from inclusive endpoints and spacing.
-    
-        Parameters
-        ----------
-        lo, hi : float
-            First and last node coordinates (km), with hi > lo.
-        step : float
-            Requested spacing in km.
-    
-        Returns
-        -------
-        numpy.ndarray
-            Monotonically increasing node coordinates.
-    
-        Raises
-        ------
-        ValueError
-            Grid would have fewer than two nodes, or endpoints cannot be
-            expressed with the requested spacing.
-    
-        Examples
-        --------
-        >>> _axis(0, 2, 1).tolist()
-        [0.0, 1.0, 2.0]
-        """
+
+    Parameters
+    ----------
+    lo, hi : float
+        First and last node coordinates (km), with hi > lo.
+    step : float
+        Requested spacing in km.
+
+    Returns
+    -------
+    numpy.ndarray
+        Monotonically increasing node coordinates.
+
+    Raises
+    ------
+    ValueError
+        Grid would have fewer than two nodes, or endpoints cannot be
+        expressed with the requested spacing.
+
+    Examples
+    --------
+    >>> _axis(0, 2, 1).tolist()
+    [0.0, 1.0, 2.0]
+    """
     count = int(round((hi - lo) / step))
     if count < 1:
         raise ValueError('Each grid axis must contain at least two nodes')
@@ -170,49 +166,49 @@ def _axis(lo, hi, step):
 def build_regular_model(model, step=None, lim=None, *, z_positive='up',
                         interpolate=False, method='nearest'):
     """Reconstruct a 3D regular model from shuffled XYZ/Vp/Vs rows.
-    
-        Each row's coordinates and velocities are kept associated during sorting.
-        A complete regular source lattice is mapped exactly without interpolation.
-        Interpolation is an explicitly requested fallback for missing, irregular
-        or different-resolution nodes.
-    
-        Parameters
-        ----------
-        model : dict or pandas.DataFrame
-            One-dimensional x, y, z, vp and optional vs arrays in km / km/s.
-        step : float or None, optional
-            Requested isotropic grid step in km; infer from source if None.
-        lim : sequence of 6 floats or None, optional
-            xmin,xmax,ymin,ymax,zmin,zmax in the input Z convention.
-        z_positive : {'up', 'down'}, default 'up'
-            Interpret Z as elevation or seismic depth.
-        interpolate : bool, default False
-            Allow explicit regridding if direct remapping is not possible.
-        method : {'nearest', 'linear'}, default 'nearest'
-            SciPy interpolation method for a 3D grid.
-    
-        Returns
-        -------
-        tuple
-            (x_axis, y_axis, depth_axis, vp_3d, vs_3d), indexed [X,Y,Z].
-            vs_3d is None when the source has no vs column.
-    
-        Raises
-        ------
-        ValueError
-            Duplicate coordinates, incomplete unrequested regridding, invalid
-            grid geometry or nonpositive/nonfinite velocities.
-    
-        Examples
-        --------
-        >>> src = {'x':[1, 0, 1, 0, 1, 0, 1, 0],
-        ...        'y':[0, 0, 1, 1, 0, 0, 1, 1],
-        ...        'z':[0, 0, 0, 0, 1, 1, 1, 1],
-        ...        'vp':[6]*8}
-        >>> result = build_regular_model(src, step=1, z_positive='down')
-        >>> result[3].shape
-        (2, 2, 2)
-        """
+
+    Each row's coordinates and velocities are kept associated during sorting.
+    A complete regular source lattice is mapped exactly without interpolation.
+    Interpolation is an explicitly requested fallback for missing, irregular
+    or different-resolution nodes.
+
+    Parameters
+    ----------
+    model : dict or pandas.DataFrame
+        One-dimensional x, y, z, vp and optional vs arrays in km / km/s.
+    step : float or None, optional
+        Requested isotropic grid step in km; infer from source if None.
+    lim : sequence of 6 floats or None, optional
+        xmin,xmax,ymin,ymax,zmin,zmax in the input Z convention.
+    z_positive : {'up', 'down'}, default 'up'
+        Interpret Z as elevation or seismic depth.
+    interpolate : bool, default False
+        Allow explicit regridding if direct remapping is not possible.
+    method : {'nearest', 'linear'}, default 'nearest'
+        SciPy interpolation method for a 3D grid.
+
+    Returns
+    -------
+    tuple
+        (x_axis, y_axis, depth_axis, vp_3d, vs_3d), indexed [X,Y,Z].
+        vs_3d is None when the source has no vs column.
+
+    Raises
+    ------
+    ValueError
+        Duplicate coordinates, incomplete unrequested regridding, invalid
+        grid geometry or nonpositive/nonfinite velocities.
+
+    Examples
+    --------
+    >>> src = {'x':[1, 0, 1, 0, 1, 0, 1, 0],
+    ...        'y':[0, 0, 1, 1, 0, 0, 1, 1],
+    ...        'z':[0, 0, 0, 0, 1, 1, 1, 1],
+    ...        'vp':[6]*8}
+    >>> result = build_regular_model(src, step=1, z_positive='down')
+    >>> result[3].shape
+    (2, 2, 2)
+    """
     # Normalize coordinates before forming the Cartesian product of axes.
     c = _columns(model, z_positive)
     axes = [np.unique(c[k]) for k in ('x', 'y', 'z')]
@@ -302,56 +298,56 @@ def create_model_file(model=None, step=None, float_type='FLOAT', lim=None,
                       section=(0, 0, 0), *, z_positive='up',
                       map_rot=0., validate_output=True, **kwargs):
     """Write P and optional S NonLinLoc model files from a table.
-    
-        Samples may be unordered; the generated binary buffers always use
-        [X, Y, depth], with Z as the fastest varying index.
-    
-        Parameters
-        ----------
-        model : dict or pandas.DataFrame
-            Aligned 1D x/y/z/vp and optional vs fields.
-        step : float or None
-            Uniform target grid spacing in km.
-        float_type : {'FLOAT', 'DOUBLE'}
-            Precision of the binary buffers.
-        lim : sequence or None
-            Optional XYZ bounds.
-        plot : bool
-            Whether to plot the resulting files.
-        name : str
-            Output file stem, default 'layer'.
-        method : {'nearest', 'linear'}
-            Interpolation method, if requested.
-        path : str or pathlib.Path
-            Output directory.
-        proj_name : str
-            NonLinLoc projection name.
-        orig_lon, orig_lat : float
-            Geographic projection origin, in degrees.
-        interpolate : bool
-            Allow regridding instead of exact row mapping.
-        transpose : tuple
-            Deprecated compatibility argument; coordinate sorting determines order.
-        section : tuple
-            Indices (ix, iy, iz) for optional plot.
-        z_positive : {'up', 'down'}
-            Convention for input vertical coordinates.
-        map_rot : float
-            Clockwise map rotation (degrees).
-        validate_output : bool
-            Read back and numerically validate the generated files.
-        **kwargs
-            Additional optional parameters passed to plotting.
-    
-        Returns
-        -------
-        tuple
-            (P_buf_file, S_buf_file_or_None, last_NLLGrid).
-    
-        Examples
-        --------
-        >>> # p, s, grid = create_model_file(model, path='model', step=0.5)
-        """
+
+    Samples may be unordered; the generated binary buffers always use
+    [X, Y, depth], with Z as the fastest varying index.
+
+    Parameters
+    ----------
+    model : dict or pandas.DataFrame
+        Aligned 1D x/y/z/vp and optional vs fields.
+    step : float or None
+        Uniform target grid spacing in km.
+    float_type : {'FLOAT', 'DOUBLE'}
+        Precision of the binary buffers.
+    lim : sequence or None
+        Optional XYZ bounds.
+    plot : bool
+        Whether to plot the resulting files.
+    name : str
+        Output file stem, default 'layer'.
+    method : {'nearest', 'linear'}
+        Interpolation method, if requested.
+    path : str or pathlib.Path
+        Output directory.
+    proj_name : str
+        NonLinLoc projection name.
+    orig_lon, orig_lat : float
+        Geographic projection origin, in degrees.
+    interpolate : bool
+        Allow regridding instead of exact row mapping.
+    transpose : tuple
+        Deprecated compatibility argument; coordinate sorting determines order.
+    section : tuple
+        Indices (ix, iy, iz) for optional plot.
+    z_positive : {'up', 'down'}
+        Convention for input vertical coordinates.
+    map_rot : float
+        Clockwise map rotation (degrees).
+    validate_output : bool
+        Read back and numerically validate the generated files.
+    **kwargs
+        Additional optional parameters passed to plotting.
+
+    Returns
+    -------
+    tuple
+        (P_buf_file, S_buf_file_or_None, last_NLLGrid).
+
+    Examples
+    --------
+    >>> # p, s, grid = create_model_file(model, path='model', step=0.5)
+    """
     if model is None:
         raise ValueError('model cannot be None')
     xyz = build_regular_model(model, step, lim, z_positive=z_positive,
@@ -406,22 +402,22 @@ def create_model_file(model=None, step=None, float_type='FLOAT', lim=None,
 # -----------------------------------------------------------------------------
 def _model_roots(model_data):
     """Resolve a file, directory or grid collection into grid roots.
-    
-        Parameters
-        ----------
-        model_data : str, pathlib.Path, NLLGrid or sequence
-            One file, a folder containing .hdr files, or existing grid objects.
-    
-        Returns
-        -------
-        list
-            Paths without .hdr/.buf extensions, or NLLGrid objects.
-    
-        Examples
-        --------
-        >>> _model_roots('layer.P.mod.hdr')
-        ['layer.P.mod']
-        """
+
+    Parameters
+    ----------
+    model_data : str, pathlib.Path, NLLGrid or sequence
+        One file, a folder containing .hdr files, or existing grid objects.
+
+    Returns
+    -------
+    list
+        Paths without .hdr/.buf extensions, or NLLGrid objects.
+
+    Examples
+    --------
+    >>> _model_roots('layer.P.mod.hdr')
+    ['layer.P.mod']
+    """
     if isinstance(model_data, NLLGrid):
         return [model_data]
     if isinstance(model_data, (list, tuple)):
@@ -438,27 +434,27 @@ def _model_roots(model_data):
 # -----------------------------------------------------------------------------
 def _crop(grid, lim):
     """Crop a grid in-place to the inclusive physical-coordinate bounds.
-    
-        Parameters
-        ----------
-        grid : NLLGrid
-            Loaded scalar grid to crop.
-        lim : sequence or None
-            (xmin,xmax,ymin,ymax,zmin,zmax); None leaves the grid unchanged.
-    
-        Returns
-        -------
-        None
-            The grid array and XYZ origin are updated in-place.
-    
-        Examples
-        --------
-        >>> grid = NLLGrid()
-        >>> grid.array = np.ones((3, 3, 3))
-        >>> _crop(grid, (1, 2, 0, 2, 0, 2))
-        >>> grid.array.shape
-        (2, 3, 3)
-        """
+
+    Parameters
+    ----------
+    grid : NLLGrid
+        Loaded scalar grid to crop.
+    lim : sequence or None
+        (xmin,xmax,ymin,ymax,zmin,zmax); None leaves the grid unchanged.
+
+    Returns
+    -------
+    None
+        The grid array and XYZ origin are updated in-place.
+
+    Examples
+    --------
+    >>> grid = NLLGrid()
+    >>> grid.array = np.ones((3, 3, 3))
+    >>> _crop(grid, (1, 2, 0, 2, 0, 2))
+    >>> grid.array.shape
+    (2, 3, 3)
+    """
     if lim is None:
         return
     if len(lim) != 6:
@@ -493,26 +489,26 @@ def _crop(grid, lim):
 # -----------------------------------------------------------------------------
 def _values(grid, slo2vel):
     """Retrieve scalar grid values with optional SLOW_LEN conversion.
-    
-        Parameters
-        ----------
-        grid : NLLGrid
-            Loaded scalar model or travel-time grid.
-        slo2vel : bool
-            Convert SLOW_LEN to km/s, leaving other grid types unchanged.
-    
-        Returns
-        -------
-        numpy.ndarray
-            Three-dimensional sample array.
-    
-        Examples
-        --------
-        >>> grid = NLLGrid()
-        >>> grid.array = np.ones((2, 2, 2))
-        >>> _values(grid, False).shape
-        (2, 2, 2)
-        """
+
+    Parameters
+    ----------
+    grid : NLLGrid
+        Loaded scalar model or travel-time grid.
+    slo2vel : bool
+        Convert SLOW_LEN to km/s, leaving other grid types unchanged.
+
+    Returns
+    -------
+    numpy.ndarray
+        Three-dimensional sample array.
+
+    Examples
+    --------
+    >>> grid = NLLGrid()
+    >>> grid.array = np.ones((2, 2, 2))
+    >>> _values(grid, False).shape
+    (2, 2, 2)
+    """
     if grid.array is None:
         raise ValueError('Packed angle grids cannot be converted to a scalar array')
     if slo2vel and grid.type == 'SLOW_LEN':
@@ -529,35 +525,35 @@ def read_model_file(model_data, plot=False, section=(0, 0, 0),
                     vmin=None, vmax=None, return_type='class',
                     slo2vel=True, lim=None):
     """Read one or more model/time grids and optionally plot slices.
-    
-        Parameters
-        ----------
-        model_data : str, pathlib.Path, NLLGrid or sequence
-            Grid file (root/.buf/.hdr), directory or collection.
-        plot : bool
-            Plot orthogonal XY, XZ and YZ sections when True.
-        section : sequence of 3 integers or None
-            (ix, iy, iz) plane indices. None omits that plane.
-        vmin, vmax : float or None
-            Plot color-scale limits.
-        return_type : {'class', 'array', 'dict'}
-            Form of the returned data.
-        slo2vel : bool
-            Convert SLOW_LEN to velocity (km/s), only for model grids.
-        lim : sequence or None
-            Optional crop limits, positive depth down.
-    
-        Returns
-        -------
-        list
-            NLLGrid instances, NumPy arrays or dictionaries of 1D XYZ/value
-            fields, according to return_type.
-    
-        Examples
-        --------
-        >>> # records = read_model_file('model', return_type='dict')
-        >>> # grids = read_model_file('model', plot=True, section=(0, 0, 0))
-        """
+
+    Parameters
+    ----------
+    model_data : str, pathlib.Path, NLLGrid or sequence
+        Grid file (root/.buf/.hdr), directory or collection.
+    plot : bool
+        Plot orthogonal XY, XZ and YZ sections when True.
+    section : sequence of 3 integers or None
+        (ix, iy, iz) plane indices. None omits that plane.
+    vmin, vmax : float or None
+        Plot color-scale limits.
+    return_type : {'class', 'array', 'dict'}
+        Form of the returned data.
+    slo2vel : bool
+        Convert SLOW_LEN to velocity (km/s), only for model grids.
+    lim : sequence or None
+        Optional crop limits, positive depth down.
+
+    Returns
+    -------
+    list
+        NLLGrid instances, NumPy arrays or dictionaries of 1D XYZ/value
+        fields, according to return_type.
+
+    Examples
+    --------
+    >>> # records = read_model_file('model', return_type='dict')
+    >>> # grids = read_model_file('model', plot=True, section=(0, 0, 0))
+    """
     inputs = _model_roots(model_data)
     grids = []
     for item in inputs:
@@ -598,31 +594,31 @@ def read_model_file(model_data, plot=False, section=(0, 0, 0),
 def plot_model_grids(grids, *, section=(0, 0, 0), vmin=None, vmax=None,
                      slo2vel=True):
     """Render orientation-accurate YZ, XZ and XY model sections.
-    
-        Vertical images have depth increasing downward. Horizontal images
-        have X rightward and Y upward. Image pixels correspond directly to
-        transposed [X,Y,Z] slices without arbitrary rotations.
-    
-        Parameters
-        ----------
-        grids : sequence of NLLGrid
-            Loaded scalar model or time grids.
-        section : tuple
-            (ix, iy, iz) indices; None omits a plane.
-        vmin, vmax : float or None
-            Colorbar limits.
-        slo2vel : bool
-            Display SLOW_LEN as km/s; other quantities remain unconverted.
-    
-        Returns
-        -------
-        tuple
-            (matplotlib.figure.Figure, axes_2d), with the image axes.
-    
-        Examples
-        --------
-        >>> # fig, axes = plot_model_grids(read_model_file('model'), section=(0,0,0))
-        """
+
+    Vertical images have depth increasing downward. Horizontal images
+    have X rightward and Y upward. Image pixels correspond directly to
+    transposed [X,Y,Z] slices without arbitrary rotations.
+
+    Parameters
+    ----------
+    grids : sequence of NLLGrid
+        Loaded scalar model or time grids.
+    section : tuple
+        (ix, iy, iz) indices; None omits a plane.
+    vmin, vmax : float or None
+        Colorbar limits.
+    slo2vel : bool
+        Display SLOW_LEN as km/s; other quantities remain unconverted.
+
+    Returns
+    -------
+    tuple
+        (matplotlib.figure.Figure, axes_2d), with the image axes.
+
+    Examples
+    --------
+    >>> # fig, axes = plot_model_grids(read_model_file('model'), section=(0,0,0))
+    """
     if plt is None:
         raise ImportError("matplotlib is required to plot NonLinLoc grids")
 
