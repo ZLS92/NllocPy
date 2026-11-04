@@ -1,4 +1,17 @@
+# =============================================================================
+# Author: Luigi Sante Zampa
+# Affiliation: NllocPy project (institutional affiliation not specified)
+# Created: 2026-11-03
+# Last modified: 2026-11-04
+#
+# Purpose:
+#   Round-trip regression tests for native NonLinLoc headers, buffers and grid metadata.
+# =============================================================================
+
 """Regression tests for NonLinLoc-compatible grid I/O."""
+# -----------------------------------------------------------------------------
+# Import external libraries
+# -----------------------------------------------------------------------------
 import numpy as np
 import pytest
 

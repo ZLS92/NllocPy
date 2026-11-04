@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# =============================================================================
+# Author: Luigi Sante Zampa
+# Affiliation: NllocPy project (institutional affiliation not specified)
+# Created: Not recorded in original file
+# Last modified: 2026-11-04
+#
+# Purpose:
+#   High-level NonLinLoc Python wrapper, control-file generation, relocation workflows and model I/O.
+# =============================================================================
 """Utilities to build and read NonLinLoc input/output files.
 
 This module contains helper functions used to generate the control files consumed
@@ -28,8 +37,10 @@ Example:
     ... )
 """
 
+
 # -----------------------------------------------------------------------------
-# Import libraries
+# Import external libraries
+# -----------------------------------------------------------------------------
 from .grid_io import NLLGrid
 from .model_tools import (
     create_model_file as _create_model_file_native,

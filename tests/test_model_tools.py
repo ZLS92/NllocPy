@@ -1,4 +1,17 @@
+# =============================================================================
+# Author: Luigi Sante Zampa
+# Affiliation: NllocPy project (institutional affiliation not specified)
+# Created: 2026-11-03
+# Last modified: 2026-11-04
+#
+# Purpose:
+#   Test sorting of unordered XYZ data and orientation of NonLinLoc model plots.
+# =============================================================================
+
 """Coordinate sorting, native binary layout and XY/XZ/YZ plotting regressions."""
+# -----------------------------------------------------------------------------
+# Import external libraries
+# -----------------------------------------------------------------------------
 import numpy as np
 import pytest
 
