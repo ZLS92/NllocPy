@@ -176,7 +176,8 @@ def main():
     Returns
     -------
     int
-        0 when all selected files pass; 1 when findings exist.
+        0 when strict selected files pass, or when using advisory --all;
+        1 when strict selected files have findings.
 
     Examples
     --------
@@ -194,7 +195,7 @@ def main():
     parser.add_argument(
         "--all",
         action="store_true",
-        help="Report headers in all source modules, including legacy code",
+        help="Advisory report of full conventions across legacy source modules",
     )
 
     args = parser.parse_args()
@@ -202,7 +203,7 @@ def main():
     if args.all:
         paths = sorted((ROOT / "NllocPy").glob("*.py"))
         paths.append(ROOT / "setup.py")
-        strict = False
+        strict = True  # Full audit, advisory exit status for legacy migration.
     else:
         paths = [ROOT / path for path in STRICT_FILES]
         strict = True
@@ -219,6 +220,10 @@ def main():
                 errors += 1
         else:
             print(f"{name}: OK")
+
+    if args.all:
+        print(f"Advisory full-package findings: {errors}")
+        return 0
 
     output = int(errors > 0)
     return output
