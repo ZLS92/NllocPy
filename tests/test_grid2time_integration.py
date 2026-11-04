@@ -1,8 +1,21 @@
+# =============================================================================
+# Author: Luigi Sante Zampa
+# Affiliation: NllocPy project (institutional affiliation not specified)
+# Created: 2026-11-03
+# Last modified: 2026-11-04
+#
+# Purpose:
+#   End-to-end verification against the bundled NonLinLoc Grid2Time C executable.
+# =============================================================================
+
 """End-to-end: feed a shuffled native velocity model to the NonLinLoc C engine.
 
 Run with NLL_GRID2TIME=<absolute path to compiled Grid2Time> pytest ...
 The test is skipped if no Grid2Time executable is available.
 """
+# -----------------------------------------------------------------------------
+# Import external libraries
+# -----------------------------------------------------------------------------
 import os
 import subprocess
 from pathlib import Path
