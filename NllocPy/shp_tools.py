@@ -18,8 +18,10 @@ from osgeo import gdal, ogr, osr
 import numpy as np
 from matplotlib import pyplot as plt, path as mpath 
 from . import utils as utl
-import time
 
+# -----------------------------------------------------------------------------
+# Shared settings and constants
+# -----------------------------------------------------------------------------
 t = time.time
 
 # Disable exceptions
