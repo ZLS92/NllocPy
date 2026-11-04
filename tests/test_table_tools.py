@@ -14,6 +14,7 @@
 import numpy as np
 import pytest
 
+from NllocPy.model_tools import build_regular_model
 from NllocPy.table_tools import (
     is_dataframe,
     restore_field_table,
@@ -162,10 +163,6 @@ def test_model_builder_accepts_pandas_when_available():
     >>> # pytest -q tests/test_table_tools.py
     """
     pandas = pytest.importorskip("pandas")
-
-    # Keep the optional model-building import at module level via importlib:
-    # this test uses the existing documented API, not a second implementation.
-    from NllocPy.model_tools import build_regular_model
 
     model = {
         "x": [0, 0, 1, 1, 0, 0, 1, 1],
