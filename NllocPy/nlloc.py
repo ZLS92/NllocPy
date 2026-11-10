@@ -48,8 +48,6 @@ from .model_tools import (
 )
 from . import utils as utl
 from . import plot as lsz_plot
-from . import raster_tools as rt
-from . import shp_tools as shp
 
 # -----------------------------------------------------------------------------
 # Set the aliases for some libraries from the utils module

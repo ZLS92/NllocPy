@@ -1,13 +1,13 @@
 # NllocPy
 
-**NllocPy** is a Python wrapper for **NonLinLoc**, an open-source software developed by Anthony Lomax for probabilistic earthquake location.  
+**NllocPy** is a Python wrapper for **NonLinLoc**, an open-source software developed by Anthony Lomax for probabilistic earthquake location.
 This package provides Python tools to automate input file preparation, manage control parameters, run NonLinLoc, and analyze or visualize results.
 
 ---
 
 ## 🚧 Project Status
 
-**This project is currently under development.**  
+**This project is currently under development.**
 Features, interfaces, and file structures may change. Use it at your own risk and feel free to contribute!
 
 
@@ -37,8 +37,9 @@ dependencies; use pip **only in editable mode** to install NllocPy.
 
 ```bash
 # Create an isolated environment with scientific / geospatial dependencies.
-conda create -n nllocpy -c conda-forge \
-    python=3.12 numpy scipy matplotlib pyproj gdal
+conda create -n nllocpy \
+    -c conda-forge --override-channels \
+    python=3.12 numpy matplotlib
 
 # Activate it before installing or running any NllocPy code.
 conda activate nllocpy
@@ -49,6 +50,14 @@ cd NllocPy
 
 # REQUIRED: editable installation from the repository root.
 python -m pip install -e .
+conda install -n nllocpy -c conda-forge gdal
+```
+
+If you plan to use raster/shapefile geospatial utilities (`raster_tools`,
+`shp_tools`, map plotting helpers), also install GDAL:
+
+```bash
+conda install -n nllocpy -c conda-forge gdal
 ```
 
 NllocPy is **not currently installed using** `pip install .`,
@@ -190,13 +199,13 @@ changes to established scientific calculations.
 ## 👤 Attribution
 
 - **NllocPy** was developed and is maintained by **Dr. Luigi Sante Zampa**.
-- The **C code in `src/`** is the original **NonLinLoc** software developed by Anthony Lomax et al.,.  
+- The **C code in `src/`** is the original **NonLinLoc** software developed by Anthony Lomax et al.,.
   NonLinLoc is available at [ut-beg-texnet/NonLinLoc](https://github.com/ut-beg-texnet/NonLinLoc).
 - **NllocPy** only provides a Python automation layer and utility scripts for easier integration.
 - The [NLLGrid](https://github.com/claudiodsf/nllgrid) library by Claudio Satriano and collaborators is a useful reference for the NonLinLoc grid format, but NllocPy does not import or depend on it.
 - If you use this wrapper, please **also cite NonLinLoc** in your scientific work:
 
-  > Lomax, A., Virieux, J., Volant, P., & Berge, C. (2000).  
-  > *Probabilistic earthquake location in 3D and layered models: Introduction of a Metropolis-Gibbs method and comparison with linear locations.*  
-  > In **Advances in Seismic Event Location**, Springer, pp. 101–134.  
+  > Lomax, A., Virieux, J., Volant, P., & Berge, C. (2000).
+  > *Probabilistic earthquake location in 3D and layered models: Introduction of a Metropolis-Gibbs method and comparison with linear locations.*
+  > In **Advances in Seismic Event Location**, Springer, pp. 101–134.
   > DOI: [10.1007/978-94-015-9536-0_5](https://doi.org/10.1007/978-94-015-9536-0_5)

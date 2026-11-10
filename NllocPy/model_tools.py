@@ -592,7 +592,7 @@ def read_model_file(model_data, plot=False, section=(0, 0, 0),
 
 # -----------------------------------------------------------------------------
 def plot_model_grids(grids, *, section=(0, 0, 0), vmin=None, vmax=None,
-                     slo2vel=True):
+                     slo2vel=True, subplot_orientation='horizontal'):
     """Render orientation-accurate YZ, XZ and XY model sections.
 
     Vertical images have depth increasing downward. Horizontal images
@@ -609,6 +609,10 @@ def plot_model_grids(grids, *, section=(0, 0, 0), vmin=None, vmax=None,
         Colorbar limits.
     slo2vel : bool
         Display SLOW_LEN as km/s; other quantities remain unconverted.
+    subplot_orientation : {'horizontal', 'vertical'}
+        Arrangement for section subplots of each grid:
+        horizontal -> one row with multiple columns;
+        vertical -> one column with multiple rows.
 
     Returns
     -------
@@ -628,9 +632,21 @@ def plot_model_grids(grids, *, section=(0, 0, 0), vmin=None, vmax=None,
     active = [(i, int(idx)) for i, idx in enumerate(sections) if idx is not None]
     if not grids:
         raise ValueError('No grids to plot')
-    fig, axs = plt.subplots(len(grids), len(active), squeeze=False,
-                            constrained_layout=True, figsize=(5 * len(active), 4 * len(grids)))
-    # Each grid occupies one row; each selected orientation one column.
+    if subplot_orientation not in ('horizontal', 'vertical'):
+        raise ValueError("subplot_orientation must be 'horizontal' or 'vertical'")
+
+    n_grids = len(grids)
+    n_active = len(active)
+    if subplot_orientation == 'horizontal':
+        nrows, ncols = n_grids, n_active
+        figsize = (5 * n_active, 4 * n_grids)
+    else:
+        nrows, ncols = n_grids * n_active, 1
+        figsize = (6, 3.8 * nrows)
+
+    fig, axs = plt.subplots(nrows, ncols, squeeze=False,
+                            constrained_layout=True, figsize=figsize)
+
     for row, g in enumerate(grids):
         vals = _values(g, slo2vel)
         axes = [g.x_orig + np.arange(g.nx) * g.dx,
@@ -640,7 +656,10 @@ def plot_model_grids(grids, *, section=(0, 0, 0), vmin=None, vmax=None,
         for col, (dim, idx) in enumerate(active):
             if idx < 0 or idx >= vals.shape[dim]:
                 raise IndexError(f'Section index {idx} outside axis {dim} extent')
-            ax = axs[row, col]
+            if subplot_orientation == 'horizontal':
+                ax = axs[row, col]
+            else:
+                ax = axs[row * n_active + col, 0]
             if dim == 0:
                 img = vals[idx, :, :].T
                 u, v = 1, 2

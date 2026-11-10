@@ -11,7 +11,12 @@
 # Import external libraries
 # -----------------------------------------------------------------------------
 from . import utils as utl
-from . import raster_tools as rt
+try:
+    from . import raster_tools as rt
+    _raster_tools_import_error = None
+except ModuleNotFoundError as _exc:
+    rt = None
+    _raster_tools_import_error = _exc
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -31,7 +36,21 @@ sys = utl.sys
 # -----------------------------------------------------------------------------
 # Create aliases for functions in raster_tools and utils libraries
 
-pltr = rt.pltr
+if rt is not None:
+    pltr = rt.pltr
+else:
+    class _MissingRasterTools:
+        def __getattr__(self, _name):
+            raise ImportError(
+                "NllocPy raster tools require optional dependency 'osgeo' (GDAL). "
+                "Install it in your environment (e.g. conda install -c conda-forge gdal)."
+            ) from _raster_tools_import_error
+
+    rt = _MissingRasterTools()
+
+    def pltr(*args, **kwargs):
+        return rt.pltr(*args, **kwargs)
+
 plta = utl.plta
 
 # -----------------------------------------------------------------------------

@@ -16,7 +16,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from datetime import datetime, timedelta
 from matplotlib.path import Path
 from matplotlib import cm
-from osgeo import gdal, osr, ogr
 import os
 import pyproj as prj
 import numpy as np
@@ -33,15 +32,26 @@ import tempfile
 import sys
 import html
 import io 
-import pdfkit
+try:
+    import pdfkit
+except ModuleNotFoundError:
+    pdfkit = None
 
 from .table_tools import is_dataframe, to_field_dict, restore_field_table
+
+try:
+    from osgeo import gdal, osr, ogr
+except ModuleNotFoundError:
+    gdal = None
+    osr = None
+    ogr = None
 
 # -----------------------------------------------------------------------------
 # Shared geodetic constants and settings
 # -----------------------------------------------------------------------------
 # Disable gdal exceptions
-gdal.UseExceptions()
+if gdal is not None:
+    gdal.UseExceptions()
 
 # -----------------------------------------------------------------------------
 # Constants
@@ -3619,6 +3629,11 @@ def create_log_file( main_function,
             file.write(html_content)
 
     if convert_to_pdf:
+        if pdfkit is None:
+            raise ImportError(
+                "PDF conversion requires optional dependency 'pdfkit'. "
+                "Install it with: python -m pip install pdfkit"
+            )
         pdf_file_name = base_name + '.pdf'
 
         try:
