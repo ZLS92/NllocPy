@@ -2,7 +2,7 @@ name: Native NonLinLoc grid I/O
 
 on:
   push:
-    branches: [feature/native-nll-grid-io, refactor/python-code-conventions]
+    branches: [main, feature/native-nll-grid-io, refactor/python-code-conventions]
   pull_request:
     branches: [main, feature/native-nll-grid-io]
 
