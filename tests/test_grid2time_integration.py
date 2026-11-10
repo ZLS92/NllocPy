@@ -2,7 +2,7 @@
 # Author: Luigi Sante Zampa
 # Affiliation: NllocPy project (institutional affiliation not specified)
 # Created: 2026-11-03
-# Last modified: 2026-11-04
+# Last modified: 2026-11-10
 #
 # Purpose:
 #   End-to-end verification against the bundled NonLinLoc Grid2Time C executable.
@@ -24,7 +24,7 @@ import numpy as np
 import pytest
 
 from NllocPy.model_tools import create_model_file
-from NllocPy.grid_io import NLLGrid
+from NllocPy.grid_tools import NLLGrid
 
 
 def test_grid2time_on_native_shuffled_velocity_model(tmp_path):
