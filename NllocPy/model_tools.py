@@ -2,7 +2,7 @@
 # Author: Luigi Sante Zampa
 # Affiliation: NllocPy project (institutional affiliation not specified)
 # Created: 2026-11-03
-# Last modified: 2026-11-04
+# Last modified: 2026-11-10
 #
 # Purpose:
 #   Build, validate, save, read and plot regular NonLinLoc velocity models from
@@ -19,7 +19,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .grid_io import NLLGrid, velocity_to_slow_len
+from .grid_tools import NLLGrid, velocity_to_slow_len
 from .table_tools import to_field_dict
 
 # Optional numerical/plotting dependencies are imported in this header block.
