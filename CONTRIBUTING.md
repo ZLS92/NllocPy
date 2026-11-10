@@ -7,6 +7,18 @@
 This repository uses consistent structure for scientific Python modules. The goal
 is readability, reproducibility and stable behavior during numerical refactors.
 
+## Editable development installation
+
+Until NllocPy has a stable release, **all installations must be editable**.
+Use a dedicated environment (conda is recommended for GDAL/pyproj), clone
+the repository and run `python -m pip install -e .` at its root.
+
+Do not use `pip install .`, `conda build conda-recipe` or
+`conda install --use-local nllocpy` for current development.
+The conda recipe is reserved for a possible future non-editable release.
+See [README.md](README.md#-installation-editable-mode-only) for
+the recommended environment and import instructions.
+
 ## Module layout
 
 Each new Python file follows this order:
