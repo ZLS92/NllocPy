@@ -2,7 +2,7 @@
 # Author: Luigi Sante Zampa
 # Affiliation: NllocPy project (institutional affiliation not specified)
 # Created: 2026-11-03
-# Last modified: 2026-11-04
+# Last modified: 2026-11-10
 #
 # Purpose:
 #   Test sorting of unordered XYZ data and orientation of NonLinLoc model plots.
@@ -17,7 +17,7 @@ import pytest
 
 from NllocPy.model_tools import (build_regular_model, create_model_file,
                                 read_model_file, plot_model_grids)
-from NllocPy.grid_io import NLLGrid
+from NllocPy.grid_tools import NLLGrid
 
 
 def _shuffled_model(seed=11, z_positive='up', vs=True):
