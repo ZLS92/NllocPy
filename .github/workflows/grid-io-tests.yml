@@ -26,4 +26,4 @@ jobs:
       - name: Check NllocPy Python conventions
         run: python tools/check_python_style.py --strict
       - name: Test native grid read/write and Grid2Time integration
-        run: MPLBACKEND=Agg python -m pytest tests/test_grid_io.py tests/test_model_tools.py tests/test_grid2time_integration.py tests/test_table_tools.py -q
+        run: MPLBACKEND=Agg python -m pytest tests/test_grid_tools.py tests/test_model_tools.py tests/test_grid2time_integration.py tests/test_table_tools.py -q
