@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# =============================================================================
+# Author: Luigi Sante Zampa
+# Affiliation: NllocPy project (institutional affiliation not specified)
+# Created: Not recorded in original file
+# Last modified: 2026-11-04
+#
+# Purpose:
+#   High-level NonLinLoc Python wrapper, control-file generation, relocation workflows and model I/O.
+# =============================================================================
 """Utilities to build and read NonLinLoc input/output files.
 
 This module contains helper functions used to generate the control files consumed
@@ -28,9 +37,15 @@ Example:
     ... )
 """
 
+
 # -----------------------------------------------------------------------------
-# Import libraries
-from nllgrid import NLLGrid
+# Import external libraries
+# -----------------------------------------------------------------------------
+from .grid_io import NLLGrid
+from .model_tools import (
+    create_model_file as _create_model_file_native,
+    read_model_file as _read_model_file_native,
+)
 from . import utils as utl
 from . import plot as lsz_plot
 from . import raster_tools as rt
@@ -777,152 +792,27 @@ def create_vel2grid3d_file(
     return file_path_name
 
 # -----------------------------------------------------------------------------
-def create_model_file( model=None, 
-                       step=None, 
-                       float_type="FLOAT",
-                       lim=None, 
-                       plot=False, 
-                       name='layer', 
-                       method='nearest',
-                       path=os.getcwd(), 
-                       proj_name="SIMPLE", 
-                       orig_lon=0, 
-                       orig_lat=0,
-                       interpolate=True,
-                       transpose=(0,1,2),
-                       section=[ 0, 0, 0 ],
-                       **kwargs ) :
+def create_model_file(
+    model=None, step=None, float_type="FLOAT", lim=None, plot=False,
+    name="layer", method="nearest", path=os.getcwd(), proj_name="SIMPLE",
+    orig_lon=0, orig_lat=0, interpolate=False, transpose=(0, 1, 2),
+    section=(0, 0, 0), z_positive="up", map_rot=0,
+    validate_output=True, **kwargs
+):
+    """Write native NonLinLoc P/S 3D velocity models from unordered XYZ rows.
+
+    Coordinate rows x/y/z/vp/vs are sorted *together*. For a complete
+    regularly spaced grid no interpolation occurs. Z is elevation-positive-up
+    by default (legacy behavior): set z_positive="down" for depth inputs.
+    The output arrays use [x, y, depth], positive depth down and Z fastest.
     """
-    Creates a model file for NLLocPy.
-
-    Args:
-        model (dict): A dictionary containing the model information. It should have the following keys:
-            - 'x': Array of x-coordinates.
-            - 'y': Array of y-coordinates.
-            - 'z': Array of z-coordinates.
-            - 'vp': Array of P-wave velocities.
-            - 'vs' (optional): Array of S-wave velocities.
-        step (float): The grid spacing for the model.
-        float_type (str): The data type for the model grid. Default is "FLOAT".
-        lim (tuple): The limits of the model grid in the form (xmin, xmax, ymin, ymax, zmin, zmax).
-        plot (bool): Whether to plot the model after creating the file. Default is False.
-        name (str): The name of the model file. Default is 'layer'.
-        method (str): The interpolation method for gridding the model. Default is 'nearest'.
-        path (str): The path where the model file will be saved. Default is the current working directory.
-        proj_name (str): The name of the project. Default is "SIMPLE".
-        orig_lon (float): The longitude of the origin. Default is 0.
-        orig_lat (float): The latitude of the origin. Default is 0.
-        interpolate (bool): Whether to interpolate the model if it is too large to fit in memory. Default is False.
-        section (list): The section to plot. It should be a list in the form [start, end, step]. Default is [0, None, None].
-        transpose (tuple): The order of the axes in the model. Default is (0, 1, 2).
-        **kwargs: Additional keyword arguments to pass to the read_model_file function.
-
-    Returns:
-        tuple: A tuple containing the paths to the P-wave and S-wave model files, and the NLLGrid object.
-
-    """
-    os.makedirs( path, exist_ok=True )
-
-    grd = NLLGrid()
-    
-    if model is not None :
-
-        x = model['x']
-        y = model['y']
-        z = model['z']
-        vp = model['vp']
-
-        if 'vs' in model :
-            vs = model['vs']
-        else :
-            vs = None
-        
-    if lim is not None :
-        xmin, xmax, ymin, ymax, zmin, zmax = lim
-        interpolate = True
-
-    else :
-
-        xmin, xmax = x.min(), x.max()
-        ymin, ymax = y.min(), y.max()
-        zmin, zmax = z.min(), z.max()
-    
-    if step == None :
-        
-        xstep = np.min( np.diff( np.unique( x ) ) )
-        ystep = np.min( np.diff( np.unique( y ) ) )
-        zstep = np.min( np.diff( np.unique( z ) ) )
-        step = np.min( [ xstep, ystep, zstep ] )
-    
-    xu = np.linspace( xmin, xmax, int( ( xmax - xmin ) / step )+1 )
-    yu = np.linspace( ymin, ymax, int( ( ymax - ymin ) / step )+1 )
-    zu = np.linspace( zmax, zmin, int( ( zmax - zmin ) / step )+1 )
-
-    # Estimate memory usage
-    n_points = len( xu ) * len( yu ) * len( zu )
-    used_mem = n_points * np.dtype(np.float64).itemsize * 4
-    max_mem = 1e9
-
-    if ( used_mem < max_mem ) or ( interpolate == True ) :
-
-        Y, X, Z = np.meshgrid( yu, xu, zu )
-        Vp = utl.sp.interpolate.griddata( (x,y,z), vp, (X,Y,Z), method=method )
-    
-    else :
-        Vp = vp.reshape( len( yu ), len( xu ), len( zu ) )
-        Vp = np.transpose(Vp, axes=transpose)
-        # Y, X, Z = np.meshgrid( yu, xu, zu )
-        # Vp = utl.sp.interpolate.griddata( (x,y,z), vp, (X,Y,Z), method=method )
-
-    # Create the model file for P-wave velocities (slowness in s/km)
-    Vp = np.where(Vp == 0, 1e-10, Vp)
-    slow_len = ( 1 / Vp  ) * step * 1.0
-    grd.array = slow_len.astype( float )
-    grd.dy = step #km
-    grd.dx = step #km
-    grd.dz = step #km
-    grd.x_orig = xu.min()  #km
-    grd.y_orig = yu.min()  #km
-    grd.z_orig = -zu.max() #km
-    grd.type = 'SLOW_LEN'
-    grd.float_type = float_type
-    grd.orig_lat = orig_lat
-    grd.orig_lon = orig_lon
-    grd.proj_name = proj_name
-    file_P_grid = path +s+ name + '.P.mod.buf'
-    grd.basename = file_P_grid.split( '.buf' )[0]
-    grd.write_hdr_file()
-    grd.write_buf_file()
-
-    if vs is not None :
-
-        if ( used_mem < max_mem ) or ( interpolate == True ) :
-
-            Vs = utl.sp.interpolate.griddata( (x,y,z), vs, (X,Y,Z), method=method )
-
-        else :
-            Vs = vs.reshape( len( yu ), len( xu ), len( zu ) )
-            Vs = np.transpose(Vs, axes=transpose)
-            # Vs = utl.sp.interpolate.griddata( (x,y,z), vs, (X,Y,Z), method=method )
-
-        # Create the model file for P-wave velocities (slowness in s/km)
-        Vs = np.where(Vs == 0, 1e-10, Vs)
-        slow_len = ( 1 / Vs  ) * step * 1.0
-        grd.array = slow_len.astype( float )
-        file_S_grid = path +s+ name + '.S.mod.buf'
-        grd.basename = file_S_grid.split( '.buf' )[0]
-        grd.write_hdr_file()
-        grd.write_buf_file()
-
-    else :
-        
-        file_S_grid = None 
-
-    if plot == True :
-
-        _ = read_model_file( path, plot=True, section=section, **kwargs )
-
-    return file_P_grid, file_S_grid, grd
+    return _create_model_file_native(
+        model=model, step=step, float_type=float_type, lim=lim, plot=plot,
+        name=name, method=method, path=path, proj_name=proj_name,
+        orig_lon=orig_lon, orig_lat=orig_lat, interpolate=interpolate,
+        transpose=transpose, section=section, z_positive=z_positive,
+        map_rot=map_rot, validate_output=validate_output, **kwargs,
+    )
 
 # -----------------------------------------------------------------------------
 def create_station_file( st_dict=None, 
@@ -2070,249 +1960,21 @@ def read_hyp_tt( hyp_file ):
     return tt_dict
 
 # -----------------------------------------------------------------------------
-def read_model_file( model_data, plot=False, section=[ 0, 0, 0 ], 
-    vmin=None, vmax=None, return_type='class', slo2vel=True, lim=None ) :
+def read_model_file(
+    model_data, plot=False, section=(0, 0, 0), vmin=None, vmax=None,
+    return_type="class", slo2vel=True, lim=None,
+):
+    """Read native NonLinLoc grid files, with correctly oriented XY/XZ/YZ plots.
 
+    Returned XYZ coordinates use NonLinLoc's positive-down depth convention.
+    Horizontal XY sections increase X rightward and Y upward. In XZ and
+    YZ sections, depth increases downward. Returned values are converted
+    to km/s only for SLOW_LEN model grids (other grid types stay unchanged).
     """
-    Reads a model file or directory of model files and 
-    optionally plots the velocity model.
-    
-    Parameters:
-     - model_data (str): Path to the model file or directory containing model files.
-     - plot (bool, optional): If True, plots the velocity model. Default is False.
-     - section (list, optional): Specifies the section of the model to plot. 
-        Default is [0, 0, 0].
-     - vmin (float, optional): Minimum value for the plot color scale. Default is None.
-     - vmax (float, optional): Maximum value for the plot color scale. Default is None.
-    
-    Returns:
-     - list: A list of NLLGrid objects representing the model grids.
-    
-    Notes:
-     - If `model_data` is a file, it reads the file and creates a single NLLGrid object.
-     - If `model_data` is a directory, it reads all files 
-        with a '.mod' extension in the directory and creates NLLGrid objects for each.
-     - If `plot` is True, it plots the velocity model using 
-        the specified section and color scale limits.
-    """
-
-    grids = []
-    file_names = []
-
-    if type( model_data ) in ( list, tuple ) :
-        
-        if type( model_data[0] ) is str :
-            model_data = [ md for md in model_data ]
-        else :
-            grids = model_data
-
-    if type( model_data ) is str :
-
-        if os.path.isfile( model_data ) :
-            model_path = model_data.split('.mod')[0] + '.mod'
-            file_names.append( model_path )
-            grids.append( NLLGrid( model_data ) )
-
-        if os.path.isdir( model_data ) :
-            for f in os.listdir( model_data ) :
-                if  '.mod' in f :
-                    model_path = model_data +s+ f.split('.mod')[0] + '.mod'
-                    if model_path not in file_names :
-                        file_names.append( model_path )
-                        grids.append( NLLGrid( model_path ) )
-                if '.time' in f :
-                    model_path = model_data +s+ f.split('.time')[0] + '.time'
-                    if model_path not in file_names :
-                        file_names.append( model_path )
-                        grids.append( NLLGrid( model_path ) )
-                if '.angle' in f :
-                    model_path = model_data +s+ f.split('.angle')[0] + '.angle'
-                    if model_path not in file_names :
-                        file_names.append( model_path )
-                        grids.append( NLLGrid( model_path ) )
-                        
-    if lim is not None :
-        
-        for i, grd in enumerate(grids) :
-            xlim = [ lim[0], lim[1] ]
-            ylim = [ lim[2], lim[3] ]
-            zlim = [ lim[4], lim[5] ]
-            
-            if xlim is None:
-                xlim = (grd.x_orig, grd.x_orig + (grd.nx - 1) * grd.dx)
-            if ylim is None:
-                ylim = (grd.y_orig, grd.y_orig + (grd.ny - 1) * grd.dy)
-            if zlim is None:
-                zlim = (grd.z_orig, grd.z_orig + (grd.nz - 1) * grd.dz)
-
-            x0, x1 = sorted(xlim)
-            y0, y1 = sorted(ylim)
-            z0, z1 = sorted(zlim)
-
-            i0 = max(0, int(np.floor((x0 - grd.x_orig) / grd.dx)))
-            i1 = min(grd.nx - 1, int(np.floor((x1 - grd.x_orig) / grd.dx)))
-            j0 = max(0, int(np.floor((y0 - grd.y_orig) / grd.dy)))
-            j1 = min(grd.ny - 1, int(np.floor((y1 - grd.y_orig) / grd.dy)))
-            k0 = max(0, int(np.floor((z0 - grd.z_orig) / grd.dz)))
-            k1 = min(grd.nz - 1, int(np.floor((z1 - grd.z_orig) / grd.dz)))
-
-            if i0 > i1 or j0 > j1 or k0 > k1:
-                raise ValueError("Crop non valido: volume vuoto")
-
-            new_array = grd.array[i0:i1+1, j0:j1+1, k0:k1+1]
-
-            new_x_orig = grd.x_orig + i0 * grd.dx
-            new_y_orig = grd.y_orig + j0 * grd.dy
-            new_z_orig = grd.z_orig + k0 * grd.dz
-
-            grd.array = new_array
-            grd.x_orig = new_x_orig
-            grd.y_orig = new_y_orig
-            grd.z_orig = new_z_orig
-            
-            grids[i] = grd
-
-    if return_type == 'array' :
-        array_list = []
-        
-        for i, g in enumerate( grids ) :
-            
-            array_list.append( g.array )
-            
-            # Convert from SLOW_LEN to VELOCITY
-            if slo2vel is True :
-                array_list[i] = ( 1/array_list[i] ) * grids[i].dx
-                
-    if return_type == 'dict' :
-        dict_list = []
-        
-        for i, g in enumerate( grids ) :
-            
-            x1d = g.x_orig + np.arange(g.nx) * g.dx
-            y1d = g.y_orig + np.arange(g.ny) * g.dy
-            z1d = g.z_orig + np.arange(g.nz) * g.dz
-
-            X, Y, Z = np.meshgrid(x1d, y1d, z1d, indexing='ij')
-            val = g.array.ravel()
-            
-            if slo2vel is True :
-                val = ( 1/val ) * g.dx
-
-            dict_list.append({
-                'x': X.ravel(),
-                'y': Y.ravel(),
-                'z': Z.ravel(),
-                'values': val } )
-
-    # Plot the velocity model
-    if plot is True :
-        
-        utl.plt.figure()
-
-        n = len( grids )
-
-        for i, A in enumerate( grids ) :
-
-            # Convert from SLOW_LEN to VELOCITY
-            if slo2vel is True :
-                AA = ( 1/A.array ) * A.dx 
-            else :
-                AA = A.array
-
-            ex = A.get_extent()
-
-            if i == 0 :
-                add1 = 0
-            else :
-                add1 = 1
-
-            # Counts None values in the section list
-            n_cols = 3 - section.count( None )
-
-            if section[0] is not None :
-
-                if n_cols == 1 :
-                    colorbar = True
-                else:
-                    colorbar = False
-
-                AAs0 = np.rot90(AA[section[0],:,:], k=-1 )
-                AAs0 = AA[section[0],:,:]
-                lim0 = [ex[2], ex[3], -ex[5], -ex[4]]
-
-                ax = utl.plta( AAs0, 
-                axis=True, lim=lim0, adjst_lim=False, new_fig=False,
-                sbplt=[n, n_cols, i*2+1+add1], 
-                print_stat=False, label='km / s',
-                tit = "North-South Section" ,
-                colorbar=colorbar,
-                vmin=vmin, vmax=vmax )
-                vmin = ax.images[-1].get_clim()[0]
-                vmax = ax.images[-1].get_clim()[1]
-
-                if section[2] is not None :
-                    hline = ( ( lim0[3] - lim0[2] ) / AAs0.shape[0] ) * section[2]
-                    ax.axhline( lim0[3]-hline, color='k', linestyle='--' )
-
-            if section[1] is not None:
-
-                if n_cols in [1, 2] :
-                    colorbar = True
-                else:
-                    colorbar = False
-
-                AAs1 = np.fliplr( np.rot90( AA[:,section[1],:], k=-1) )
-                AAs1 = AA[:,section[1],:]   
-                lim1 = [ex[0], ex[1], -ex[5], -ex[4]]
-
-                ax = utl.plta( AAs1, 
-                axis=True, lim=lim1, adjst_lim=False, new_fig=False,
-                sbplt=[n, n_cols, i*2+2+add1], 
-                print_stat=False, label='km / s',
-                tit = "West-East Section",
-                colorbar=colorbar,
-                vmin=vmin, vmax=vmax )
-                vmin = ax.images[0].get_clim()[0]
-                vmax = ax.images[0].get_clim()[1]
-
-                if section[2] is not None :
-                    hline = ( ( lim1[3] - lim1[2] ) / AAs1.shape[0] ) * section[2]
-                    ax.axhline( lim1[3]-hline, color='k', linestyle='--' )
-
-            if section[2] is not None :
-
-                AAs2 = np.flipud( np.fliplr( np.rot90(AA[:,:,section[2]], k=-1) ) )
-                AAs2 = AA[:,:,section[2]]
-                lim2 = [ex[0], ex[1], ex[2], ex[3]]
-
-                ax = utl.plta( AAs2, 
-                axis=True, lim=lim2, adjst_lim=False, new_fig=False,
-                sbplt=[n, n_cols, i*2+3+add1], 
-                print_stat=False, label='km / s',
-                tit = "Horizzontal Section",
-                colorbar=True,
-                vmin=vmin, vmax=vmax )
-                vmin = ax.images[0].get_clim()[0]
-                vmax = ax.images[0].get_clim()[1]
-
-                if section[0] is not None :
-                    vline = ( ( lim2[1] - lim2[0] ) / AAs2.shape[1] ) * section[0]
-                    ax.axvline( lim2[0]+vline, color='k', linestyle='--' )
-
-                if section[1] is not None :
-                    hline = ( ( lim2[3] - lim2[2] ) / AAs2.shape[0] ) * section[1]
-                    ax.axhline( lim2[2]+hline, color='k', linestyle='--' )
-
-            fig = utl.plt.gcf()
-            fig.suptitle( f"Model size: {AA.shape} \nSection: {section}")
-        lsz_plot.plt.tight_layout()
-
-    if return_type == 'array' :
-        return array_list
-    elif return_type == 'dict' :
-        return dict_list
-    elif return_type == 'class' :
-        return grids
+    return _read_model_file_native(
+        model_data, plot=plot, section=section, vmin=vmin, vmax=vmax,
+        return_type=return_type, slo2vel=slo2vel, lim=lim,
+    )
 
 # -----------------------------------------------------------------------------
 def create_locgrid( model=None, 
