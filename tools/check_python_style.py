@@ -2,7 +2,7 @@
 # Author: Luigi Sante Zampa
 # Affiliation: NllocPy project (institutional affiliation not specified)
 # Created: 2026-11-04
-# Last modified: 2026-11-04
+# Last modified: 2026-11-10
 #
 # Purpose:
 #   Audit Python sources against NllocPy project conventions. The core modules
@@ -23,7 +23,7 @@ from pathlib import Path
 # -----------------------------------------------------------------------------
 ROOT = Path(__file__).resolve().parents[1]
 STRICT_FILES = (
-    "NllocPy/grid_io.py",
+    "NllocPy/grid_tools.py",
     "NllocPy/model_tools.py",
     "NllocPy/table_tools.py",
 )
@@ -147,7 +147,7 @@ def audit_paths(paths, *, strict=False):
 
     Examples
     --------
-    >>> isinstance(audit_paths([ROOT / "NllocPy/grid_io.py"]), dict)
+    >>> isinstance(audit_paths([ROOT / "NllocPy/grid_tools.py"]), dict)
     True
     """
     findings = {}
