@@ -19,7 +19,7 @@ requirements:
     - setuptools
   run:
     - python >=3.8
-    - nllgrid
+    - numpy >=1.23
     - pdfkit
     - ipykernel
 
@@ -28,7 +28,7 @@ test:
     - NllocPy
 
 about:
-  home: https://github.com/YOUR_USERNAME/NllocPy
+  home: https://github.com/ZLS92/NllocPy
   license: MIT
   license_file: LICENSE
   summary: Python wrapper for NonLinLoc

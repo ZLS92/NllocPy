@@ -1,0 +1,12 @@
+# Python-generated files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+build/
+dist/
+*.egg-info/
+
+# Local environment and IDE files
+.venv/
+.idea/
+.vscode/

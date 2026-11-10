@@ -1,5 +1,20 @@
+# =============================================================================
+# Author: Luigi Sante Zampa
+# Affiliation: NllocPy project (institutional affiliation not specified)
+# Created: Not recorded in original file
+# Last modified: 2026-11-04
+#
+# Purpose:
+#   Package installation metadata and dependency declaration for NllocPy.
+# =============================================================================
+# -----------------------------------------------------------------------------
+# Import external libraries
+# -----------------------------------------------------------------------------
 from setuptools import setup, find_packages
- 
+
+# -----------------------------------------------------------------------------
+# Shared package metadata
+# -----------------------------------------------------------------------------
 classifiers = [
   'Development Status :: 2 - Pre-Alpha',
   'Intended Audience :: Science/Research',
@@ -20,7 +35,7 @@ setup(
   keywords='calculator', 
   packages=find_packages(),
   install_requires=[
-    "nllgrid",
+    "numpy>=1.23",
     "pdfkit",
     "ipykernel",
   ],
