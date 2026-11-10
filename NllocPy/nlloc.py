@@ -4,7 +4,7 @@
 # Author: Luigi Sante Zampa
 # Affiliation: NllocPy project (institutional affiliation not specified)
 # Created: Not recorded in original file
-# Last modified: 2026-11-04
+# Last modified: 2026-11-10
 #
 # Purpose:
 #   High-level NonLinLoc Python wrapper, control-file generation, relocation workflows and model I/O.
@@ -41,7 +41,7 @@ Example:
 # -----------------------------------------------------------------------------
 # Import external libraries
 # -----------------------------------------------------------------------------
-from .grid_io import NLLGrid
+from .grid_tools import NLLGrid
 from .model_tools import (
     create_model_file as _create_model_file_native,
     read_model_file as _read_model_file_native,
