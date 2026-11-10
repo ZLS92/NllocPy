@@ -1,3 +1,9 @@
+# DEVELOPMENT POLICY (see README.md):
+# Current NllocPy installations must use python -m pip install -e .
+# inside an isolated environment. This recipe produces a NON-EDITABLE
+# distribution package and is retained only for potential future releases.
+# Do NOT use conda build/install as the current development installation.
+
 {% set name = "nllocpy" %}
 {% set version = "0.0.1" %}
 
