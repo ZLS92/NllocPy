@@ -23,28 +23,67 @@ Features, interfaces, and file structures may change. Use it at your own risk an
 
 ---
 
-## 📦 Installation
+## 📦 Installation (editable mode only)
 
-Create a dedicated Python environment, then clone the repository:
+**For now, NllocPy must always be installed in editable mode** from a
+local clone of this repository. This is a development library: changes to
+the Python sources in the local checkout should be immediately available
+to scripts and Jupyter notebooks without reinstalling NllocPy.
+
+### Recommended: conda environment + editable pip installation
+
+Use conda to manage the isolated Python environment and geospatial
+dependencies; use pip **only in editable mode** to install NllocPy.
 
 ```bash
+# Create an isolated environment with scientific / geospatial dependencies.
+conda create -n nllocpy -c conda-forge \
+    python=3.12 numpy scipy matplotlib pyproj gdal
+
+# Activate it before installing or running any NllocPy code.
+conda activate nllocpy
+
+# Clone the source repository once.
 git clone https://github.com/ZLS92/NllocPy.git
 cd NllocPy
+
+# REQUIRED: editable installation from the repository root.
+python -m pip install -e .
 ```
 
-### Install with pip
+NllocPy is **not currently installed using** `pip install .`,
+`conda build conda-recipe` or `conda install --use-local nllocpy`.
+Those commands create ordinary package installations rather than the
+editable development installation required here. The existing conda
+recipe is retained for possible future distribution, not for the current
+development workflow.
+
+### Import and verify the installation
+
+Once installed, imports work in Python scripts or Jupyter notebooks from
+**any directory**, as long as the `nllocpy` environment is active:
+
+```python
+from NllocPy.grid_io import NLLGrid
+from NllocPy.model_tools import build_regular_model
+from NllocPy.nlloc import create_model_file, read_model_file
+```
+
+Check the installation from **outside the source directory**, to
+distinguish an editable installation from Python finding the local folder:
 
 ```bash
-pip install .
+cd ..
+python -c "from NllocPy.grid_io import NLLGrid; print('NllocPy import OK')"
+python -m pip show NllocPy
 ```
 
-### Install with conda
+In the `pip show` output, the **Editable project location** should point to
+the local NllocPy repository directory.
 
-```bash
-conda install conda-build
-conda build conda-recipe
-conda install --use-local nllocpy
-```
+For later source updates, run `git pull` inside the clone. Editable mode
+makes edits to installed Python sources available immediately; rerun
+`python -m pip install -e .` if package metadata or dependencies change.
 
 ---
 
