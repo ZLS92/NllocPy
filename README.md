@@ -16,7 +16,7 @@ Features, interfaces, and file structures may change. Use it at your own risk an
 ## ⚙️ Features
 
 - **Input File Automation**: Create NonLinLoc control files, velocity models and travel-time grids.
-- **Native Grid I/O**: Read/write NonLinLoc `.hdr`/`.buf` grids via `NllocPy.grid_io`, with no dependency on `nllgrid`.
+- **Native Grid I/O**: Read/write NonLinLoc `.hdr`/`.buf` grids via `NllocPy.grid_tools`, with no dependency on `nllgrid`.
 - **Utility Scripts**: Python tools for handling raster DEMs and geospatial shapefiles.
 - **Integrated NonLinLoc Core**: Includes the **original NonLinLoc C source code** (`src/`) for easy compilation.
 - **Result Visualization**: Python functions for plotting and interactive analysis.
@@ -73,7 +73,7 @@ Once installed, imports work in Python scripts or Jupyter notebooks from
 **any directory**, as long as the `nllocpy` environment is active:
 
 ```python
-from NllocPy.grid_io import NLLGrid
+from NllocPy.grid_tools import NLLGrid
 from NllocPy.model_tools import build_regular_model
 from NllocPy.nlloc import create_model_file, read_model_file
 ```
@@ -83,7 +83,7 @@ distinguish an editable installation from Python finding the local folder:
 
 ```bash
 cd ..
-python -c "from NllocPy.grid_io import NLLGrid; print('NllocPy import OK')"
+python -c "from NllocPy.grid_tools import NLLGrid; print('NllocPy import OK')"
 python -m pip show NllocPy
 ```
 
@@ -98,11 +98,11 @@ makes edits to installed Python sources available immediately; rerun
 
 ## Native 3D model grids
 
-`NllocPy.grid_io.NLLGrid` writes a regular 3D grid as an ASCII `.hdr` and binary `.buf` file. Arrays are indexed `[x, y, z]` (Z fastest in the binary file); local coordinates are in km. For velocity models used by `Grid2Time`, the grid type must be `SLOW_LEN` and values must be `step_km / velocity_km_s`. NaN, infinite and non-positive velocities are rejected instead of producing unusable model files.
+`NllocPy.grid_tools.NLLGrid` writes a regular 3D grid as an ASCII `.hdr` and binary `.buf` file. Arrays are indexed `[x, y, z]` (Z fastest in the binary file); local coordinates are in km. For velocity models used by `Grid2Time`, the grid type must be `SLOW_LEN` and values must be `step_km / velocity_km_s`. NaN, infinite and non-positive velocities are rejected instead of producing unusable model files.
 
 ```python
 import numpy as np
-from NllocPy.grid_io import NLLGrid, velocity_to_slow_len
+from NllocPy.grid_tools import NLLGrid, velocity_to_slow_len
 
 vp = np.full((20, 15, 12), 5.5)  # km/s
 grid = NLLGrid()
@@ -119,7 +119,7 @@ restored = NLLGrid("model/layer.P.mod")
 assert restored.array.shape == vp.shape
 ```
 
-The native implementation is intentionally limited to regular grids. Reading `FLOAT`/`DOUBLE` model and travel-time buffers and packed take-off angle buffers is supported; writing packed angle buffers is not. The header stores projection parameters but does not calculate coordinate transformations. For cross-platform files, the optional `byteorder` argument controls binary endianness. Test grid I/O with `python -m pytest tests/test_grid_io.py` (requires pytest).
+The native implementation is intentionally limited to regular grids. Reading `FLOAT`/`DOUBLE` model and travel-time buffers and packed take-off angle buffers is supported; writing packed angle buffers is not. The header stores projection parameters but does not calculate coordinate transformations. For cross-platform files, the optional `byteorder` argument controls binary endianness. Test grid I/O with `python -m pytest tests/test_grid_tools.py` (requires pytest).
 
 ## Unordered XYZ velocity models and correctly oriented plots
 
@@ -172,7 +172,7 @@ vertical sign, crop extents and plot pixel orientation run under GitHub
 Actions. Execute locally with:
 
 ```bash
-MPLBACKEND=Agg python -m pytest tests/test_grid_io.py tests/test_model_tools.py -q
+MPLBACKEND=Agg python -m pytest tests/test_grid_tools.py tests/test_model_tools.py -q
 ```
 
 ## Python coding conventions and tabular data
