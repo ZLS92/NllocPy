@@ -1,13 +1,13 @@
 # NllocPy
 
-**NllocPy** is a Python wrapper for **NonLinLoc**, an open-source software developed by Anthony Lomax for probabilistic earthquake location.  
+**NllocPy** is a Python wrapper for **NonLinLoc**, an open-source software developed by Anthony Lomax for probabilistic earthquake location.
 This package provides Python tools to automate input file preparation, manage control parameters, run NonLinLoc, and analyze or visualize results.
 
 ---
 
 ## 🚧 Project Status
 
-**This project is currently under development.**  
+**This project is currently under development.**
 Features, interfaces, and file structures may change. Use it at your own risk and feel free to contribute!
 
 
@@ -24,26 +24,40 @@ Features, interfaces, and file structures may change. Use it at your own risk an
 
 ## 📦 Installation
 
-Clone the repository and install locally with pip:
+Before installing, it is recommended to create a dedicated virtual environment for the project.
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/NllocPy.git
 cd NllocPy
+```
+
+### Installazione con pip
+
+```bash
 pip install .
+```
+
+### Installazione con conda
+
+```bash
+conda install conda-build
+conda build conda-recipe
+conda install --use-local nllocpy
+```
 
 ---
 
 ## 👤 Attribution
 
 - **NllocPy** was developed and is maintained by **Dr. Luigi Sante Zampa**.
-- The **C code in `src/`** is the original **NonLinLoc** software developed by Anthony Lomax et al.,.  
+- The **C code in `src/`** is the original **NonLinLoc** software developed by Anthony Lomax et al.,.
   NonLinLoc is available at [ut-beg-texnet/NonLinLoc](https://github.com/ut-beg-texnet/NonLinLoc).
 - **NllocPy** only provides a Python automation layer and utility scripts for easier integration.
-- Some ideas and components for reading/writing NonLinLoc grid files uses the [NLLGrid](https://github.com/claudiodsf/nllgrid),  
+- Some ideas and components for reading/writing NonLinLoc grid files uses the [NLLGrid](https://github.com/claudiodsf/nllgrid),
   a Python library by Claudio Satriano and Natalia Poiata.
 - If you use this wrapper, please **also cite NonLinLoc** in your scientific work:
 
-  > Lomax, A., Virieux, J., Volant, P., & Berge, C. (2000).  
-  > *Probabilistic earthquake location in 3D and layered models: Introduction of a Metropolis-Gibbs method and comparison with linear locations.*  
-  > In **Advances in Seismic Event Location**, Springer, pp. 101–134.  
+  > Lomax, A., Virieux, J., Volant, P., & Berge, C. (2000).
+  > *Probabilistic earthquake location in 3D and layered models: Introduction of a Metropolis-Gibbs method and comparison with linear locations.*
+  > In **Advances in Seismic Event Location**, Springer, pp. 101–134.
   > DOI: [10.1007/978-94-015-9536-0_5](https://doi.org/10.1007/978-94-015-9536-0_5)
